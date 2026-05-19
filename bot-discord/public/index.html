@@ -119,6 +119,7 @@
 
             if (!username || !password) {
                 msg.className = 'msg error';
+                msg.style.display = 'block';
                 msg.textContent = 'Preencha todos os campos.';
                 return;
             }
@@ -136,6 +137,7 @@
 
                 if (data.success) {
                     msg.className = 'msg success';
+                    msg.style.display = 'block';
                     msg.textContent = '✅ Bem-vindo! Redirecionando...';
 
                     // Salva sessão + token JWT no localStorage
@@ -148,12 +150,14 @@
                     }, 800);
                 } else {
                     msg.className = 'msg error';
+                    msg.style.display = 'block';
                     msg.textContent = '❌ ' + data.message;
                     btn.disabled = false;
                     btn.textContent = 'Entrar';
                 }
             } catch (err) {
                 msg.className = 'msg error';
+                msg.style.display = 'block';
                 msg.textContent = '❌ Erro de conexão com o servidor.';
                 btn.disabled = false;
                 btn.textContent = 'Entrar';
