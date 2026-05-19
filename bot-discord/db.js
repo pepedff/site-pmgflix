@@ -178,12 +178,24 @@ migrateFromJSON();
 // AUTO-SEED OWNER USER IF EMPTY
 function autoSeedOwner() {
     try {
-        const existing = userStmts.all.all();
-        if (existing.length === 0) {
+        // Seed master admin 'dono'
+        if (!userStmts.findByUsername.get('dono')) {
             const bcrypt = require('bcrypt');
             const hash = bcrypt.hashSync('senha123', 10);
             userStmts.create.run('dono', hash, null, 'ultra', 'ativo', 1);
-            console.log('[DB] Seeding inicial: Usuário "dono" criado como Administrador/Owner com senha "senha123"!');
+            console.log('[DB] Seeding: Usuário "dono" criado!');
+        }
+
+        // Seed user 'dogcuteoutra353' com o mesmo hash de senha local!
+        if (!userStmts.findByUsername.get('dogcuteoutra353')) {
+            userStmts.create.run('dogcuteoutra353', '$2b$10$3rYU3Ord52i1Koun0aALk.uCqfp1dxDXVureYtP0ehH6ZJTRk/7JW', '1443780891112636437', 'ultra', 'ativo', 1);
+            console.log('[DB] Seeding: Usuário "dogcuteoutra353" importado!');
+        }
+
+        // Seed user 'mel9249' com o mesmo hash de senha local!
+        if (!userStmts.findByUsername.get('mel9249')) {
+            userStmts.create.run('mel9249', '$2b$10$WgFjIhjPBeWIyOsOMEPBge/owdeipux2KO66JXOB91ZYd1wcvToV2', '1506346688028348517', 'premium', 'ativo', 0);
+            console.log('[DB] Seeding: Usuário "mel9249" importado!');
         }
     } catch (e) {
         console.error('[DB] Erro no auto-seeding:', e.message);
