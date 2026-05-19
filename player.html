@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMGFlix — Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#04040a;color:#fff;min-height:100vh}
+.loading{display:flex;align-items:center;justify-content:center;height:100vh;font-size:18px;color:#888}
+.back-btn{position:fixed;top:20px;left:20px;z-index:100;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);color:#fff;padding:10px 20px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;transition:all .3s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.back-btn:hover{background:rgba(139,92,246,.3);border-color:rgba(139,92,246,.4)}
+
+/* PLAYER */
+.player-wrap{position:relative;width:100%;max-width:1200px;margin:0 auto;background:#000;border-radius:0 0 16px 16px;overflow:hidden;aspect-ratio:16/9}
+.player-wrap.fullscreen{max-width:100%;border-radius:0;position:fixed;inset:0;z-index:9999;aspect-ratio:auto}
+.player-wrap video{width:100%;height:100%;display:block;background:#000}
+.player-wrap.fullscreen video{object-fit:contain}
+
+/* CONTROLS */
+.controls{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.85));padding:16px 20px 14px;opacity:0;transition:opacity .3s;display:flex;flex-direction:column;gap:8px}
+.player-wrap:hover .controls,.controls.show{opacity:1}
+
+.progress-bar{width:100%;height:5px;background:rgba(255,255,255,.15);border-radius:4px;cursor:pointer;position:relative;transition:height .2s}
+.progress-bar:hover{height:8px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#8B5CF6,#A78BFA);border-radius:4px;position:relative;transition:width .1s linear}
+.progress-fill::after{content:'';position:absolute;right:-6px;top:50%;transform:translateY(-50%);width:14px;height:14px;background:#fff;border-radius:50%;opacity:0;transition:opacity .2s;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.progress-bar:hover .progress-fill::after{opacity:1}
+.buffered{position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,.12);border-radius:4px;pointer-events:none}
+
+.ctrl-row{display:flex;align-items:center;justify-content:space-between}
+.ctrl-left,.ctrl-right{display:flex;align-items:center;gap:12px}
+.ctrl-btn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px;transition:transform .2s,color .2s;line-height:1}
+.ctrl-btn:hover{transform:scale(1.15);color:#A78BFA}
+.time{font-size:13px;color:rgba(255,255,255,.7);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* VOLUME */
+.vol-wrap{display:flex;align-items:center;gap:6px}
+.vol-bar{width:70px;height:4px;background:rgba(255,255,255,.15);border-radius:3px;cursor:pointer;position:relative}
+.vol-fill{height:100%;background:#8B5CF6;border-radius:3px}
+
+/* INFO */
+.content-info{max-width:1200px;margin:24px auto;padding:0 20px}
+.content-info h1{font-size:28px;font-weight:800;margin-bottom:8px}
+.content-info .meta{display:flex;gap:12px;font-size:13px;color:#999;margin-bottom:12px;flex-wrap:wrap}
+.content-info .meta span{display:flex;align-items:center;gap:4px}
+.content-info .desc{font-size:15px;line-height:1.7;color:rgba(255,255,255,.6);max-width:700px}
+
+/* EPISODES */
+.episodes{max-width:1200px;margin:32px auto;padding:0 20px}
+.episodes h2{font-size:20px;font-weight:700;margin-bottom:16px}
+.season-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.season-tab{padding:8px 18px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.6);cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;font-family:inherit}
+.season-tab.active,.season-tab:hover{background:rgba(139,92,246,.15);border-color:#8B5CF6;color:#fff}
+.ep-list{display:flex;flex-direction:column;gap:8px}
+.ep-card{display:flex;align-items:center;gap:16px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;cursor:pointer;transition:all .3s}
+.ep-card:hover{background:rgba(139,92,246,.08);border-color:rgba(139,92,246,.2)}
+.ep-card.active{border-color:#8B5CF6;background:rgba(139,92,246,.1)}
+.ep-num{font-size:24px;font-weight:800;color:rgba(139,92,246,.4);min-width:40px;text-align:center}
+.ep-info{flex:1}
+.ep-info h3{font-size:15px;font-weight:600;margin-bottom:2px}
+.ep-info p{font-size:13px;color:rgba(255,255,255,.4)}
+.ep-play{font-size:20px;opacity:.4;transition:opacity .2s}
+.ep-card:hover .ep-play{opacity:1}
+
+.next-ep-btn{display:none;position:absolute;bottom:80px;right:20px;background:rgba(139,92,246,.9);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;z-index:10;font-family:inherit;transition:all .3s;backdrop-filter:blur(8px)}
+.next-ep-btn:hover{background:#8B5CF6;transform:scale(1.05)}
+
+@media(max-width:768px){.content-info,.episodes{padding:0 16px}.player-wrap{border-radius:0}}
+</style>
+</head>
+<body>
+<a class="back-btn" href="PMGFlix.html">← Voltar</a>
+<div class="loading" id="loadingScreen">Carregando...</div>
+
+<div id="playerPage" style="display:none">
+<div class="player-wrap" id="playerWrap">
+    <video id="video" preload="auto"></video>
+    <button class="next-ep-btn" id="nextEpBtn" onclick="playNextEp()">Próximo Episódio ▶</button>
+    <div class="controls" id="controls">
+        <div class="progress-bar" id="progressBar"><div class="buffered" id="buffered"></div><div class="progress-fill" id="progressFill"></div></div>
+        <div class="ctrl-row">
+            <div class="ctrl-left">
+                <button class="ctrl-btn" id="playBtn" onclick="togglePlay()">▶</button>
+                <button class="ctrl-btn" onclick="skip(-10)">⏪</button>
+                <button class="ctrl-btn" onclick="skip(10)">⏩</button>
+                <div class="vol-wrap">
+                    <button class="ctrl-btn" id="volBtn" onclick="toggleMute()">🔊</button>
+                    <div class="vol-bar" id="volBar"><div class="vol-fill" id="volFill" style="width:100%"></div></div>
+                </div>
+                <span class="time" id="timeDisplay">0:00 / 0:00</span>
+            </div>
+            <div class="ctrl-right">
+                <button class="ctrl-btn" id="subBtn" onclick="toggleSub()" title="Legendas" style="display:none">💬</button>
+                <button class="ctrl-btn" onclick="toggleFS()">⛶</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-info" id="contentInfo"></div>
+<div class="episodes" id="episodesSection" style="display:none"></div>
+</div>
+
+<script>
+const API = localStorage.getItem('pmgflix_api_url') || (
+    window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' 
+        ? window.location.origin 
+        : 'https://pmgflix.onrender.com'
+);
+
+const TOKEN = () => localStorage.getItem('pmgflix_token');
+function apiFetch(url, opts={}){return fetch(API+url,{...opts,headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN(),...opts.headers}}).then(r=>r.json())}
+if(!TOKEN()){window.location.href='index.html';}
+
+const params = new URLSearchParams(location.search);
+const contentId = params.get('id');
+const episodeId = params.get('ep');
+let content = null, currentEpId = null, seasons = [];
+
+const video = document.getElementById('video');
+const playBtn = document.getElementById('playBtn');
+const progressFill = document.getElementById('progressFill');
+const progressBar = document.getElementById('progressBar');
+const timeDisplay = document.getElementById('timeDisplay');
+const volFill = document.getElementById('volFill');
+const volBar = document.getElementById('volBar');
+
+// ── LOAD CONTENT ────────────────────────────────
+async function init(){
+    if(!contentId){document.getElementById('loadingScreen').textContent='Conteúdo não encontrado';return}
+    content = await apiFetch('/contents/'+contentId);
+    if(!content||content.error){document.getElementById('loadingScreen').textContent='Erro: '+(content?.error||'Não encontrado');return}
+    if(!content.accessible){document.getElementById('loadingScreen').textContent='🔒 '+content.reason;return}
+
+    document.title = content.title + ' — PMGFlix';
+    document.getElementById('contentInfo').innerHTML = `
+        <h1>${content.title}</h1>
+        <div class="meta">
+            <span>${content.type}</span>
+            <span>${content.category||''}</span>
+            <span>${content.required_plan!=='gratis'?'⭐ '+content.required_plan:''}</span>
+            ${content.early_access?'<span>🔮 Acesso antecipado</span>':''}
+        </div>
+        <p class="desc">${content.description||''}</p>
+    `;
+
+    if(content.type==='filme'){
+        await startWatch(contentId, null, content.video_url, content.subtitle_url);
+    } else {
+        seasons = content.seasons||[];
+        renderEpisodes();
+        const epToPlay = episodeId || seasons[0]?.episodes?.[0]?.id;
+        if(epToPlay) playEpisode(epToPlay);
+    }
+
+    document.getElementById('loadingScreen').style.display='none';
+    document.getElementById('playerPage').style.display='block';
+}
+
+async function startWatch(cid, eid, videoUrl, subUrl){
+    const res = await apiFetch('/watch/start',{method:'POST',body:JSON.stringify({content_id:parseInt(cid),episode_id:eid?parseInt(eid):null})});
+    if(!res.allowed){alert('🔒 '+res.reason);return}
+    video.src = res.videoUrl || videoUrl;
+    currentEpId = eid;
+    // Legendas
+    video.querySelectorAll('track').forEach(t=>t.remove());
+    const sub = res.subtitleUrl || subUrl;
+    if(sub){
+        const track = document.createElement('track');
+        track.kind='subtitles';track.label='Português';track.srclang='pt';track.src=sub;
+        video.appendChild(track);
+        document.getElementById('subBtn').style.display='inline';
+    } else {
+        document.getElementById('subBtn').style.display='none';
+    }
+    // Restaurar progresso
+    if(res.progress && res.progress.progress_seconds > 5 && !res.progress.completed){
+        video.currentTime = res.progress.progress_seconds;
+    }
+    video.play().catch(()=>{});
+    playBtn.textContent='⏸';
+}
+
+function playEpisode(epId){
+    let ep = null;
+    for(const s of seasons){for(const e of (s.episodes||[])){if(e.id==epId){ep=e;break}}}
+    if(!ep) return;
+    startWatch(contentId, epId, ep.video_url, ep.subtitle_url);
+    document.querySelectorAll('.ep-card').forEach(c=>c.classList.remove('active'));
+    const card = document.querySelector(`.ep-card[data-id="${epId}"]`);
+    if(card) card.classList.add('active');
+    history.replaceState(null,'',`player.html?id=${contentId}&ep=${epId}`);
+}
+
+function renderEpisodes(){
+    const sec = document.getElementById('episodesSection');
+    sec.style.display='block';
+    let html = '<h2>Episódios</h2><div class="season-tabs">';
+    seasons.forEach((s,i)=>{
+        html+=`<button class="season-tab ${i===0?'active':''}" onclick="showSeason(${i},this)">${s.title||'T'+s.season_number}</button>`;
+    });
+    html+='</div>';
+    seasons.forEach((s,i)=>{
+        html+=`<div class="ep-list season-list" data-season="${i}" style="${i>0?'display:none':''}">`;
+        (s.episodes||[]).forEach(ep=>{
+            html+=`<div class="ep-card" data-id="${ep.id}" onclick="playEpisode(${ep.id})">
+                <div class="ep-num">${ep.episode_number}</div>
+                <div class="ep-info"><h3>${ep.title}</h3><p>${ep.description||''}</p></div>
+                <div class="ep-play">▶</div>
+            </div>`;
+        });
+        html+='</div>';
+    });
+    sec.innerHTML = html;
+}
+function showSeason(idx, btn){
+    document.querySelectorAll('.season-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.season-list').forEach(l=>l.style.display='none');
+    document.querySelector(`.season-list[data-season="${idx}"]`).style.display='flex';
+}
+
+// ── PLAYER CONTROLS ────────────────────────────
+function togglePlay(){if(video.paused){video.play();playBtn.textContent='⏸'}else{video.pause();playBtn.textContent='▶'}}
+function skip(s){video.currentTime+=s}
+function toggleMute(){video.muted=!video.muted;document.getElementById('volBtn').textContent=video.muted?'🔇':'🔊'}
+function toggleSub(){const tracks=video.textTracks;if(tracks.length){tracks[0].mode=tracks[0].mode==='showing'?'hidden':'showing'}}
+function toggleFS(){
+    const w=document.getElementById('playerWrap');
+    if(!document.fullscreenElement){w.requestFullscreen?.();w.classList.add('fullscreen')}
+    else{document.exitFullscreen?.();w.classList.remove('fullscreen')}
+}
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)document.getElementById('playerWrap').classList.remove('fullscreen')});
+
+video.addEventListener('timeupdate',()=>{
+    if(!video.duration)return;
+    const pct=(video.currentTime/video.duration)*100;
+    progressFill.style.width=pct+'%';
+    timeDisplay.textContent=fmt(video.currentTime)+' / '+fmt(video.duration);
+});
+video.addEventListener('click', togglePlay);
+video.addEventListener('dblclick', toggleFS);
+
+progressBar.addEventListener('click',e=>{const r=progressBar.getBoundingClientRect();video.currentTime=(e.clientX-r.left)/r.width*video.duration});
+volBar.addEventListener('click',e=>{const r=volBar.getBoundingClientRect();video.volume=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));volFill.style.width=(video.volume*100)+'%'});
+
+// Save progress every 5s
+setInterval(()=>{
+    if(!video.paused&&video.duration&&contentId){
+        apiFetch('/watch/progress',{method:'PATCH',body:JSON.stringify({
+            content_id:parseInt(contentId),episode_id:currentEpId?parseInt(currentEpId):null,
+            progress_seconds:video.currentTime,progress_percent:(video.currentTime/video.duration)*100,completed:false
+        })});
+    }
+},5000);
+
+// Video ended
+video.addEventListener('ended',()=>{
+    playBtn.textContent='▶';
+    apiFetch('/watch/progress',{method:'PATCH',body:JSON.stringify({
+        content_id:parseInt(contentId),episode_id:currentEpId?parseInt(currentEpId):null,
+        progress_seconds:video.duration,progress_percent:100,completed:true
+    })});
+    // Next episode?
+    if(content.type!=='filme'&&currentEpId){document.getElementById('nextEpBtn').style.display='block'}
+});
+
+function playNextEp(){
+    if(!currentEpId) return;
+    let found=false,nextEp=null;
+    for(const s of seasons){for(const e of(s.episodes||[])){if(found){nextEp=e;break}if(e.id==currentEpId)found=true}if(nextEp)break}
+    if(nextEp){document.getElementById('nextEpBtn').style.display='none';playEpisode(nextEp.id)}
+}
+
+function fmt(s){const m=Math.floor(s/60);return m+':'+(Math.floor(s%60)+'').padStart(2,'0')}
+
+// Keyboard shortcuts
+document.addEventListener('keydown',e=>{
+    if(e.code==='Space'){e.preventDefault();togglePlay()}
+    if(e.code==='ArrowLeft')skip(-10);
+    if(e.code==='ArrowRight')skip(10);
+    if(e.code==='KeyF')toggleFS();
+    if(e.code==='KeyM')toggleMute();
+});
+
+// Hide controls after inactivity
+let hideTimer;
+document.getElementById('playerWrap').addEventListener('mousemove',()=>{
+    document.getElementById('controls').classList.add('show');
+    clearTimeout(hideTimer);
+    hideTimer=setTimeout(()=>document.getElementById('controls').classList.remove('show'),3000);
+});
+
+init();
+</script>
+</body>
+</html>

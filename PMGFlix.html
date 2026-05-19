@@ -1855,7 +1855,12 @@
         }
 
         // API
-        const API = window.location.origin;
+        const API = localStorage.getItem('pmgflix_api_url') || (
+            window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' 
+                ? window.location.origin 
+                : 'https://pmgflix.onrender.com'
+        );
         const TOKEN = () => localStorage.getItem('pmgflix_token');
         function apiFetch(url, opts = {}) {
             return fetch(API + url, {
@@ -1879,7 +1884,7 @@
                         adminLink.style.cssText = 'padding:12px 18px;font-size:13px;color:#A78BFA;cursor:pointer;transition:background .2s;font-weight:500;';
                         adminLink.onmouseover = () => adminLink.style.background = 'rgba(139,92,246,.08)';
                         adminLink.onmouseout = () => adminLink.style.background = 'transparent';
-                        adminLink.onclick = () => window.location.href = '/admin.html';
+                        adminLink.onclick = () => window.location.href = 'admin.html';
                         document.getElementById('profileMenu').insertBefore(adminLink, document.getElementById('profileMenu').lastElementChild);
                     }
                 }
@@ -1899,7 +1904,7 @@
         function doLogout() {
             localStorage.removeItem('pmgflix_user');
             localStorage.removeItem('pmgflix_token');
-            window.location.href = '/';
+            window.location.href = 'index.html';
         }
 
         async function loadContents() {
@@ -1952,7 +1957,7 @@
                             <h3 style="font-size:24px;font-weight:700;color:#fff;margin-bottom:10px;letter-spacing:0.5px;">Catálogo em Construção</h3>
                             <p style="font-size:14px;color:rgba(255,255,255,0.6);max-width:440px;line-height:1.6;margin-bottom:28px;">Nenhum conteúdo foi publicado ainda no PMGFlix. Se você for o administrador, clique abaixo para adicionar seus filmes e séries pelo painel!</p>
                             ${isOwner ? `
-                                <button class="btn btn-primary" onclick="window.location.href='/admin.html'" style="padding:12px 32px;border-radius:12px;font-weight:700;font-size:14px;letter-spacing:0.5px;box-shadow:0 8px 24px rgba(139,92,246,0.35);cursor:pointer;transition:all 0.3s ease;">⚙️ Acessar Painel Admin</button>
+                                <button class="btn btn-primary" onclick="window.location.href='admin.html'" style="padding:12px 32px;border-radius:12px;font-weight:700;font-size:14px;letter-spacing:0.5px;box-shadow:0 8px 24px rgba(139,92,246,0.35);cursor:pointer;transition:all 0.3s ease;">⚙️ Acessar Painel Admin</button>
                             ` : ''}
                         </div>
                     `;
@@ -2036,7 +2041,7 @@
                     alert('🔒 ' + (data.reason || 'Você não tem acesso a este plano.'));
                     return;
                 }
-                window.location.href = `/player.html?id=${id}`;
+                window.location.href = `player.html?id=${id}`;
             } catch (err) {
                 alert('🎬 Este conteúdo ainda não foi publicado pelo administrador.');
             }
