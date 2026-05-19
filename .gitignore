@@ -1,0 +1,21 @@
+# Node.js dependencies
+node_modules/
+bot-discord/node_modules/
+
+# Local databases and runtime data
+bot-discord/data/
+*.db
+*.db-journal
+*.db-wal
+
+# Media uploads (videos, posters, subtitles)
+bot-discord/uploads/
+
+# Environment configurations and keys
+.env
+.env.local
+.env.production
+
+# System files
+.DS_Store
+Thumbs.db
