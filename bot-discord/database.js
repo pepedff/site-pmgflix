@@ -69,6 +69,14 @@ function getActiveUsers() {
     return getAll().filter(u => u.status === 'ativo');
 }
 
+// Deleta usuário completamente
+function deleteUser(username) {
+    const users = getAll();
+    const filtered = users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
+    saveAll(filtered);
+    return filtered;
+}
+
 module.exports = {
     init,
     getAll,
@@ -78,4 +86,5 @@ module.exports = {
     updateUser,
     deactivateUser,
     getActiveUsers,
+    deleteUser,
 };

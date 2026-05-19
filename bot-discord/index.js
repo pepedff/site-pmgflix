@@ -294,6 +294,53 @@ client.on('messageCreate', async (message) => {
         return;
     }
 
+    // ── !deletar <username> (somente dono) ──────────────
+    if (cmd === 'deletar') {
+        if (message.author.id !== CONFIG.OWNER_ID) {
+            return message.reply('🚫 Apenas o dono pode usar este comando.');
+        }
+        const target = args[0];
+        if (!target) return message.reply('Use: `!deletar <username>`');
+
+        const user = db.findByUsername(target);
+        if (!user) return message.reply(`❌ Usuário \`${target}\` não encontrado.`);
+
+        db.deleteUser(target);
+
+        // Sincroniza com SQLite
+        try {
+            sqliteDb.userStmts.deleteByUsername.run(target);
+        } catch (e) {
+            console.error('[SQLITE] Erro ao deletar usuário:', e.message);
+        }
+
+        message.reply(`✅ Usuário \`${target}\` foi **deletado completamente** de todos os sistemas.`);
+        console.log(`[DELETADO] ${target} por ${message.author.tag}`);
+        return;
+    }
+
+    // ── !deletarconta (qualquer usuário deleta a própria conta) ──
+    if (cmd === 'deletarconta') {
+        const user = db.findByDiscordId(message.author.id);
+        if (!user) {
+            return message.reply('❌ Você não possui uma conta registrada.');
+        }
+
+        const username = user.username;
+        db.deleteUser(username);
+
+        // Sincroniza com SQLite
+        try {
+            sqliteDb.userStmts.deleteByUsername.run(username);
+        } catch (e) {
+            console.error('[SQLITE] Erro ao deletar conta própria:', e.message);
+        }
+
+        message.reply(`✅ Sua conta (\`${username}\`) foi **excluída definitivamente** com sucesso. Seu acesso foi encerrado.`);
+        console.log(`[CONTA_DELETADA] ${username} deletou a própria conta via Discord.`);
+        return;
+    }
+
     // ── !ajuda ──────────────────────────────────────────
     if (cmd === 'ajuda' || cmd === 'help') {
         const embed = new EmbedBuilder()
@@ -305,10 +352,12 @@ client.on('messageCreate', async (message) => {
                 '`!pagar <plano>` — Solicitar pagamento\n' +
                 '`!minhaconta` — Ver seus dados\n' +
                 '`!resetar` — Gerar nova senha\n' +
+                '`!deletarconta` — Excluir sua própria conta\n' +
                 '`!ajuda` — Este menu\n\n' +
                 '**Admin:**\n' +
                 '`!usuarios` — Listar usuários ativos\n' +
-                '`!revogar <user>` — Revogar acesso'
+                '`!revogar <user>` — Revogar acesso\n' +
+                '`!deletar <user>` — Excluir usuário completamente'
             )
             .setTimestamp();
         return message.reply({ embeds: [embed] });
@@ -417,7 +466,7 @@ client.on('interactionCreate', async (interaction) => {
                         { name: '👤 Username', value: `\`${username}\`` },
                         { name: '🔑 Senha', value: `\`${senhaPlain}\`` },
                         { name: '📋 Plano', value: plano.nome },
-                        { name: '🌐 Site', value: '`https://site-pmgflix.vercel.app` (ou Vercel)' },
+                        { name: '🌐 Site', value: '`https://site-pmgflix.onrender.com` (no Render)' },
                     )
                     .setFooter({ text: '⚠️ Guarde essas credenciais! Use !resetar se perder a senha.' })
                     .setTimestamp();

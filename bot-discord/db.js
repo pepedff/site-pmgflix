@@ -92,6 +92,8 @@ const userStmts = {
     incrementWatched: db.prepare('UPDATE users SET films_watched = films_watched + 1 WHERE id = ?'),
     getWatched: db.prepare('SELECT films_watched FROM users WHERE id = ?'),
     setOwner: db.prepare('UPDATE users SET is_owner = 1 WHERE id = ?'),
+    delete: db.prepare('DELETE FROM users WHERE id = ?'),
+    deleteByUsername: db.prepare('DELETE FROM users WHERE username = ?'),
     all: db.prepare('SELECT id, username, plan, status, is_owner, films_watched, created_at FROM users'),
 };
 
