@@ -417,7 +417,7 @@ client.on('interactionCreate', async (interaction) => {
                         { name: '👤 Username', value: `\`${username}\`` },
                         { name: '🔑 Senha', value: `\`${senhaPlain}\`` },
                         { name: '📋 Plano', value: plano.nome },
-                        { name: '🌐 Site', value: '`http://localhost:3001` (ou seu domínio)' },
+                        { name: '🌐 Site', value: '`https://site-pmgflix.vercel.app` (ou Vercel)' },
                     )
                     .setFooter({ text: '⚠️ Guarde essas credenciais! Use !resetar se perder a senha.' })
                     .setTimestamp();
