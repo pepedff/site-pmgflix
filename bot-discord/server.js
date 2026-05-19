@@ -15,7 +15,8 @@ const app = express();
 const PORT = process.env.API_PORT || 3001;
 
 // ── Uploads ─────────────────────────────────────────────
-const UPLOADS = path.join(__dirname, 'uploads');
+const PERSISTENT_DIR = '/var/data';
+const UPLOADS = fs.existsSync(PERSISTENT_DIR) ? path.join(PERSISTENT_DIR, 'uploads') : path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 ['videos', 'posters', 'subtitles'].forEach(d => {
     const p = path.join(UPLOADS, d);
