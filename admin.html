@@ -922,12 +922,7 @@
     </div>
 
     <script>
-        const API = localStorage.getItem('pmgflix_api_url') || (
-            window.location.hostname === 'localhost' || 
-            window.location.hostname === '127.0.0.1' 
-                ? window.location.origin 
-                : 'https://pmgflix.onrender.com'
-        );
+        const API = localStorage.getItem('pmgflix_api_url') || window.location.origin;
 
         const TK = () => localStorage.getItem('pmgflix_token');
         let allContents = [], allUsers = [];

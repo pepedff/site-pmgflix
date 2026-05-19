@@ -112,12 +112,7 @@
 
     <script>
         // Smart fallback configuration for API base URL
-        const API = localStorage.getItem('pmgflix_api_url') || (
-            window.location.hostname === 'localhost' || 
-            window.location.hostname === '127.0.0.1' 
-                ? window.location.origin 
-                : 'https://pmgflix.onrender.com' // Placeholder or user's production backend URL
-        );
+        const API = localStorage.getItem('pmgflix_api_url') || window.location.origin;
 
         // Pre-fill API settings input
         document.getElementById('api_url_input').value = API;

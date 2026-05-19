@@ -103,12 +103,7 @@ body{font-family:'Inter',sans-serif;background:#04040a;color:#fff;min-height:100
 </div>
 
 <script>
-const API = localStorage.getItem('pmgflix_api_url') || (
-    window.location.hostname === 'localhost' || 
-    window.location.hostname === '127.0.0.1' 
-        ? window.location.origin 
-        : 'https://pmgflix.onrender.com'
-);
+const API = localStorage.getItem('pmgflix_api_url') || window.location.origin;
 
 const TOKEN = () => localStorage.getItem('pmgflix_token');
 function apiFetch(url, opts={}){return fetch(API+url,{...opts,headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN(),...opts.headers}}).then(r=>r.json())}
