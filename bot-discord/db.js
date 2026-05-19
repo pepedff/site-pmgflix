@@ -175,6 +175,22 @@ function migrateFromJSON() {
 }
 migrateFromJSON();
 
+// AUTO-SEED OWNER USER IF EMPTY
+function autoSeedOwner() {
+    try {
+        const existing = userStmts.all.all();
+        if (existing.length === 0) {
+            const bcrypt = require('bcrypt');
+            const hash = bcrypt.hashSync('senha123', 10);
+            userStmts.create.run('dono', hash, null, 'ultra', 'ativo', 1);
+            console.log('[DB] Seeding inicial: Usuário "dono" criado como Administrador/Owner com senha "senha123"!');
+        }
+    } catch (e) {
+        console.error('[DB] Erro no auto-seeding:', e.message);
+    }
+}
+autoSeedOwner();
+
 // Garante que o OWNER_ID tem is_owner
 function setOwnerByDiscordId(discordId) {
     const user = userStmts.findByDiscord.get(discordId);
