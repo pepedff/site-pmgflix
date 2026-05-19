@@ -7,98 +7,394 @@
     <title>PMGFlix — Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8B5CF6;
+            --primary-light: #A78BFA;
+            --primary-dark: #6D28D9;
+            --accent: #c4b5fd;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+            --bg: #050511;
+            --bg-2: #0a0820;
+            --gold: #fbbf24;
+        }
+
+        html,
+        body {
+            background: var(--bg);
+            scroll-behavior: smooth;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #04040a;
             color: #fff;
             min-height: 100vh;
-            overflow-x: hidden
+            overflow-x: hidden;
+            position: relative;
         }
 
-        /* LOADING */
+        /* === SCROLLBAR === */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, .3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--primary-light), var(--primary));
+        }
+
+        /* === ANIMATED MESH GRADIENT BACKGROUND === */
+        .mesh-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .mesh-bg::before,
+        .mesh-bg::after,
+        .mesh-bg .blob-3 {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: .35;
+        }
+
+        .mesh-bg::before {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, #8B5CF6, transparent 70%);
+            top: -250px;
+            left: -200px;
+            animation: blobMove1 18s ease-in-out infinite;
+        }
+
+        .mesh-bg::after {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #ec4899, transparent 70%);
+            bottom: -200px;
+            right: -150px;
+            animation: blobMove2 22s ease-in-out infinite;
+        }
+
+        .mesh-bg .blob-3 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #06b6d4, transparent 70%);
+            top: 40%;
+            left: 50%;
+            opacity: .2;
+            animation: blobMove3 25s ease-in-out infinite;
+        }
+
+        @keyframes blobMove1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(100px, 80px) scale(1.2) rotate(120deg);
+            }
+
+            66% {
+                transform: translate(-50px, 120px) scale(.9) rotate(240deg);
+            }
+        }
+
+        @keyframes blobMove2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+
+            50% {
+                transform: translate(-120px, -80px) scale(1.15) rotate(180deg);
+            }
+        }
+
+        @keyframes blobMove3 {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-30%, -70%) scale(1.3);
+            }
+        }
+
+        /* Grid texture overlay */
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(139, 92, 246, .03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139, 92, 246, .03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+        }
+
+        /* Noise texture */
+        .noise {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            opacity: .03;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* === LOADING — CINEMATIC === */
         .loading {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            gap: 20px
+            gap: 36px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .loading-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 56px;
+            letter-spacing: 8px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 30px rgba(139, 92, 246, .6));
+            animation: logoPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+
+            0%,
+            100% {
+                letter-spacing: 8px;
+                filter: drop-shadow(0 0 30px rgba(139, 92, 246, .6));
+            }
+
+            50% {
+                letter-spacing: 12px;
+                filter: drop-shadow(0 0 50px rgba(139, 92, 246, .9));
+            }
         }
 
         .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 3px solid rgba(139, 92, 246, .15);
-            border-top-color: #8B5CF6;
+            width: 80px;
+            height: 80px;
+            position: relative;
+        }
+
+        .loading-spinner::before,
+        .loading-spinner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
             border-radius: 50%;
-            animation: spin 1s linear infinite
+            border: 3px solid transparent;
+        }
+
+        .loading-spinner::before {
+            border-top-color: var(--primary);
+            border-right-color: var(--primary-light);
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 20px rgba(139, 92, 246, .5);
+        }
+
+        .loading-spinner::after {
+            inset: 12px;
+            border-bottom-color: var(--pink);
+            border-left-color: var(--primary);
+            animation: spin 1.5s linear infinite reverse;
         }
 
         @keyframes spin {
             to {
-                transform: rotate(360deg)
+                transform: rotate(360deg);
             }
         }
 
         .loading-text {
-            font-size: 15px;
+            font-size: 14px;
             color: rgba(255, 255, 255, .5);
-            font-weight: 500
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            animation: textFade 2s ease-in-out infinite;
         }
 
-        /* BACK BUTTON */
+        @keyframes textFade {
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* === BACK BUTTON === */
         .back-btn {
             position: fixed;
-            top: 20px;
-            left: 20px;
+            top: 24px;
+            left: 24px;
             z-index: 100;
-            background: rgba(0, 0, 0, .6);
-            backdrop-filter: blur(12px);
+            background: rgba(15, 10, 30, .65);
+            backdrop-filter: blur(24px) saturate(200%);
+            -webkit-backdrop-filter: blur(24px) saturate(200%);
             border: 1px solid rgba(255, 255, 255, .1);
             color: #fff;
-            padding: 10px 18px;
-            border-radius: 10px;
+            padding: 12px 22px;
+            border-radius: 14px;
             cursor: pointer;
             font-family: inherit;
             font-size: 14px;
             font-weight: 600;
-            transition: all .3s;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             opacity: 0;
-            transition: opacity .3s, background .3s, border-color .3s
+            transition: all .4s cubic-bezier(.4, 0, .2, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .4);
+            overflow: hidden;
+            position: fixed;
+        }
+
+        .back-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, .3), rgba(236, 72, 153, .2));
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .back-btn>* {
+            position: relative;
+            z-index: 1;
         }
 
         .back-btn.show {
-            opacity: 1
+            opacity: 1;
         }
 
         .back-btn:hover {
-            background: rgba(139, 92, 246, .3);
-            border-color: rgba(139, 92, 246, .4);
-            transform: translateX(-2px)
+            transform: translateX(-4px);
+            border-color: rgba(139, 92, 246, .6);
+            box-shadow: 0 12px 40px rgba(139, 92, 246, .35);
         }
 
-        /* PLAYER WRAPPER */
+        .back-btn:hover::before {
+            opacity: 1;
+        }
+
+        /* === HERO BACKDROP === */
+        .hero-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 90vh;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            opacity: .6;
+            mask-image: linear-gradient(180deg, black 0%, black 50%, transparent 100%);
+            -webkit-mask-image: linear-gradient(180deg, black 0%, black 50%, transparent 100%);
+        }
+
+        .hero-backdrop::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 30% 0%, rgba(139, 92, 246, .25), transparent 60%),
+                radial-gradient(ellipse at 70% 20%, rgba(236, 72, 153, .15), transparent 50%);
+        }
+
+        /* === PLAYER === */
+        .player-section {
+            position: relative;
+            z-index: 2;
+            padding-top: 0;
+        }
+
         .player-wrap {
             position: relative;
             width: 100%;
-            max-width: 1280px;
+            max-width: 1400px;
             margin: 0 auto;
             background: #000;
-            border-radius: 0 0 16px 16px;
+            border-radius: 0 0 24px 24px;
             overflow: hidden;
             aspect-ratio: 16/9;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .6)
+            box-shadow:
+                0 40px 100px rgba(0, 0, 0, .8),
+                0 0 120px rgba(139, 92, 246, .2),
+                inset 0 0 0 1px rgba(255, 255, 255, .05);
+        }
+
+        @media (min-width: 768px) {
+            .player-wrap {
+                border-radius: 24px;
+                margin-top: 24px;
+            }
+        }
+
+        /* Glow border effect */
+        .player-wrap::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--primary), var(--pink), var(--cyan), var(--primary));
+            background-size: 300% 300%;
+            z-index: -1;
+            opacity: .5;
+            animation: borderGlow 8s linear infinite;
+            filter: blur(8px);
+        }
+
+        @keyframes borderGlow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .player-wrap.fullscreen {
@@ -108,7 +404,12 @@
             inset: 0;
             z-index: 9999;
             aspect-ratio: auto;
-            height: 100vh
+            height: 100vh;
+            margin: 0;
+        }
+
+        .player-wrap.fullscreen::before {
+            display: none;
         }
 
         .player-wrap video {
@@ -116,210 +417,337 @@
             height: 100%;
             display: block;
             background: #000;
-            cursor: pointer
+            cursor: pointer;
         }
 
         .player-wrap.fullscreen video {
-            object-fit: contain
+            object-fit: contain;
         }
 
-        /* CENTRAL PLAY BUTTON (when paused) */
+        /* === AMBIENT LIGHT === */
+        .ambient-light {
+            position: absolute;
+            inset: -40px;
+            z-index: -1;
+            filter: blur(50px);
+            opacity: .4;
+            pointer-events: none;
+            background: linear-gradient(135deg, var(--primary), var(--pink));
+            animation: ambientPulse 6s ease-in-out infinite;
+        }
+
+        @keyframes ambientPulse {
+
+            0%,
+            100% {
+                opacity: .3;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: .5;
+                transform: scale(1.05);
+            }
+        }
+
+        /* === CENTRAL PLAY BUTTON === */
         .center-play {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 88px;
-            height: 88px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
-            background: rgba(139, 92, 246, .85);
-            backdrop-filter: blur(8px);
-            border: none;
+            background: linear-gradient(135deg, rgba(139, 92, 246, .95), rgba(109, 40, 217, .95));
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, .2);
             color: #fff;
-            font-size: 36px;
+            font-size: 42px;
             cursor: pointer;
             display: none;
             align-items: center;
             justify-content: center;
-            transition: all .3s;
-            box-shadow: 0 8px 32px rgba(139, 92, 246, .5);
-            z-index: 5
+            transition: all .4s cubic-bezier(.4, 0, .2, 1);
+            box-shadow:
+                0 25px 70px rgba(139, 92, 246, .7),
+                inset 0 1px 0 rgba(255, 255, 255, .3),
+                inset 0 -20px 40px rgba(0, 0, 0, .2);
+            z-index: 5;
+        }
+
+        .center-play::before,
+        .center-play::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(139, 92, 246, .5);
+        }
+
+        .center-play::before {
+            inset: -10px;
+            animation: ringPulse 2s ease-in-out infinite;
+        }
+
+        .center-play::after {
+            inset: -20px;
+            animation: ringPulse 2s ease-in-out infinite .5s;
+        }
+
+        @keyframes ringPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: .7;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0;
+            }
         }
 
         .center-play.show {
             display: flex;
-            animation: popIn .3s ease
+            animation: popIn .5s cubic-bezier(.34, 1.56, .64, 1);
         }
 
         .center-play:hover {
-            background: #8B5CF6;
-            transform: translate(-50%, -50%) scale(1.1)
+            transform: translate(-50%, -50%) scale(1.12);
+            box-shadow: 0 30px 90px rgba(139, 92, 246, .9);
         }
 
         @keyframes popIn {
-            from {
-                transform: translate(-50%, -50%) scale(.5);
-                opacity: 0
+            0% {
+                transform: translate(-50%, -50%) scale(.2) rotate(-180deg);
+                opacity: 0;
             }
 
-            to {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0);
+                opacity: 1;
             }
         }
 
-        /* DOUBLE-CLICK SEEK INDICATORS */
+        /* === SEEK INDICATORS === */
         .seek-indicator {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(0, 0, 0, .6);
-            backdrop-filter: blur(8px);
+            background: rgba(139, 92, 246, .3);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, .15);
             color: #fff;
-            padding: 18px 26px;
+            padding: 26px 32px;
             border-radius: 50%;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             opacity: 0;
             pointer-events: none;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            z-index: 6
+            gap: 6px;
+            z-index: 6;
+            box-shadow: 0 15px 50px rgba(139, 92, 246, .5);
         }
 
         .seek-indicator.left {
-            left: 15%
+            left: 10%;
         }
 
         .seek-indicator.right {
-            right: 15%
+            right: 10%;
         }
 
         .seek-indicator.show {
-            animation: seekPulse .8s ease
+            animation: seekPulse 1s cubic-bezier(.4, 0, .2, 1);
         }
 
         @keyframes seekPulse {
             0% {
                 opacity: 0;
-                transform: translateY(-50%) scale(.7)
+                transform: translateY(-50%) scale(.5);
             }
 
             30% {
                 opacity: 1;
-                transform: translateY(-50%) scale(1)
+                transform: translateY(-50%) scale(1);
             }
 
             100% {
                 opacity: 0;
-                transform: translateY(-50%) scale(1.1)
+                transform: translateY(-50%) scale(1.3);
             }
         }
 
         .seek-indicator .arrow {
-            font-size: 24px
+            font-size: 32px;
+            animation: arrowMove 1s ease infinite;
         }
 
-        /* TOP GRADIENT (title overlay) */
+        @keyframes arrowMove {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(-5px);
+            }
+        }
+
+        .seek-indicator.right .arrow {
+            animation-name: arrowMoveR;
+        }
+
+        @keyframes arrowMoveR {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+        }
+
+        /* === TOP OVERLAY === */
         .player-top {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            padding: 60px 24px 40px;
-            background: linear-gradient(180deg, rgba(0, 0, 0, .85), transparent);
+            padding: 28px 32px 70px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, .95) 0%, rgba(0, 0, 0, .4) 60%, transparent 100%);
             opacity: 0;
-            transition: opacity .3s;
+            transition: opacity .4s ease;
             pointer-events: none;
-            z-index: 3
+            z-index: 3;
         }
 
         .player-wrap.show-controls .player-top,
         .player-wrap:hover .player-top {
-            opacity: 1
+            opacity: 1;
         }
 
         .player-top-title {
-            font-size: 16px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
             font-weight: 700;
             color: #fff;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, .6)
+            text-shadow: 0 2px 16px rgba(0, 0, 0, .9);
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .player-top-title::before {
+            content: '';
+            width: 4px;
+            height: 22px;
+            background: linear-gradient(180deg, var(--primary), var(--pink));
+            border-radius: 3px;
+            box-shadow: 0 0 12px var(--primary);
         }
 
         .player-top-sub {
             font-size: 13px;
-            color: rgba(255, 255, 255, .7);
-            margin-top: 2px
+            color: rgba(255, 255, 255, .8);
+            margin-top: 6px;
+            margin-left: 16px;
+            font-weight: 500;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, .8);
+            letter-spacing: 0.3px;
         }
 
-        /* CONTROLS */
+        /* === CONTROLS === */
         .controls {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(transparent, rgba(0, 0, 0, .92));
-            padding: 30px 20px 14px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, .9) 30%, rgba(0, 0, 0, .98));
+            padding: 60px 28px 18px;
             opacity: 0;
-            transition: opacity .3s;
+            transition: opacity .4s ease;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            z-index: 4
+            gap: 14px;
+            z-index: 4;
         }
 
         .player-wrap:hover .controls,
         .controls.show {
-            opacity: 1
+            opacity: 1;
         }
 
-        /* PROGRESS BAR */
+        /* === PROGRESS === */
         .progress-wrap {
             position: relative;
-            padding: 8px 0;
-            cursor: pointer
+            padding: 12px 0;
+            cursor: pointer;
         }
 
         .progress-bar {
             width: 100%;
             height: 5px;
-            background: rgba(255, 255, 255, .2);
+            background: rgba(255, 255, 255, .15);
             border-radius: 4px;
             position: relative;
-            transition: height .2s
+            transition: height .25s cubic-bezier(.4, 0, .2, 1);
+            overflow: hidden;
+            backdrop-filter: blur(4px);
         }
 
         .progress-wrap:hover .progress-bar {
-            height: 7px
+            height: 10px;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #8B5CF6, #A78BFA);
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 50%, var(--pink) 100%);
+            background-size: 200% 100%;
+            animation: gradientMove 3s linear infinite;
             border-radius: 4px;
             position: relative;
             transition: width .1s linear;
-            box-shadow: 0 0 10px rgba(139, 92, 246, .5)
+            box-shadow: 0 0 20px rgba(139, 92, 246, .8), 0 0 8px rgba(236, 72, 153, .4);
+        }
+
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 200% 50%;
+            }
         }
 
         .progress-fill::after {
             content: '';
             position: absolute;
-            right: -7px;
+            right: -9px;
             top: 50%;
             transform: translateY(-50%) scale(0);
-            width: 14px;
-            height: 14px;
+            width: 18px;
+            height: 18px;
             background: #fff;
             border-radius: 50%;
-            transition: transform .2s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .5), 0 0 0 3px rgba(139, 92, 246, .4)
+            transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+            box-shadow:
+                0 4px 16px rgba(0, 0, 0, .6),
+                0 0 0 5px rgba(139, 92, 246, .5),
+                0 0 0 10px rgba(139, 92, 246, .2);
         }
 
         .progress-wrap:hover .progress-fill::after {
-            transform: translateY(-50%) scale(1)
+            transform: translateY(-50%) scale(1);
         }
 
         .buffered {
@@ -327,47 +755,57 @@
             top: 0;
             left: 0;
             height: 100%;
-            background: rgba(255, 255, 255, .15);
+            background: rgba(255, 255, 255, .25);
             border-radius: 4px;
             pointer-events: none;
-            transition: width .3s
+            transition: width .3s;
         }
 
-        /* HOVER TIME PREVIEW */
         .time-preview {
             position: absolute;
-            bottom: 24px;
-            background: rgba(0, 0, 0, .85);
-            backdrop-filter: blur(8px);
+            bottom: 32px;
+            background: rgba(10, 8, 30, .98);
+            backdrop-filter: blur(16px);
             color: #fff;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
             transform: translateX(-50%);
             pointer-events: none;
             opacity: 0;
             transition: opacity .2s;
             font-variant-numeric: tabular-nums;
-            border: 1px solid rgba(139, 92, 246, .3)
+            border: 1px solid rgba(139, 92, 246, .5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .5), 0 0 20px rgba(139, 92, 246, .3);
+        }
+
+        .time-preview::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(139, 92, 246, .5);
         }
 
         .time-preview.show {
-            opacity: 1
+            opacity: 1;
         }
 
         .ctrl-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px
+            gap: 8px;
         }
 
         .ctrl-left,
         .ctrl-right {
             display: flex;
             align-items: center;
-            gap: 14px
+            gap: 4px;
         }
 
         .ctrl-btn {
@@ -376,660 +814,1045 @@
             color: #fff;
             font-size: 20px;
             cursor: pointer;
-            padding: 6px;
-            transition: transform .2s, color .2s, background .2s;
+            padding: 10px;
+            transition: all .25s cubic-bezier(.4, 0, .2, 1);
             line-height: 1;
-            border-radius: 8px;
-            position: relative
+            border-radius: 12px;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+            height: 42px;
+            overflow: hidden;
+        }
+
+        .ctrl-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(139, 92, 246, .4), transparent 70%);
+            opacity: 0;
+            transition: opacity .3s;
         }
 
         .ctrl-btn:hover {
-            transform: scale(1.15);
-            color: #A78BFA;
-            background: rgba(255, 255, 255, .06)
+            color: var(--accent);
+            transform: scale(1.15) translateY(-2px);
+        }
+
+        .ctrl-btn:hover::before {
+            opacity: 1;
+        }
+
+        .ctrl-btn:active {
+            transform: scale(.92);
         }
 
         .ctrl-btn.active {
-            color: #A78BFA
+            color: var(--primary-light);
         }
 
-        /* TOOLTIPS */
-        .ctrl-btn[data-tip]:hover::before {
+        .ctrl-btn.active::before {
+            opacity: .6;
+        }
+
+        .ctrl-btn>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .ctrl-btn[data-tip]:hover::after {
             content: attr(data-tip);
             position: absolute;
-            bottom: calc(100% + 8px);
+            bottom: calc(100% + 12px);
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, .9);
+            background: rgba(10, 8, 30, .98);
+            backdrop-filter: blur(16px);
             color: #fff;
-            padding: 5px 10px;
-            border-radius: 6px;
+            padding: 8px 14px;
+            border-radius: 10px;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             white-space: nowrap;
-            border: 1px solid rgba(139, 92, 246, .3);
-            pointer-events: none
+            border: 1px solid rgba(139, 92, 246, .4);
+            pointer-events: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            animation: tipFade .25s ease;
+            z-index: 100;
+        }
+
+        @keyframes tipFade {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(6px);
+            }
         }
 
         .time {
-            font-size: 13px;
-            color: rgba(255, 255, 255, .85);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            color: rgba(255, 255, 255, .95);
             font-variant-numeric: tabular-nums;
             white-space: nowrap;
-            font-weight: 500
+            font-weight: 600;
+            margin-left: 10px;
+            letter-spacing: 0.5px;
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, .05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, .08);
         }
 
-        /* VOLUME */
+        /* === VOLUME === */
         .vol-wrap {
             display: flex;
             align-items: center;
-            gap: 8px
+            gap: 6px;
         }
 
         .vol-bar {
             width: 0;
-            height: 4px;
+            height: 5px;
             background: rgba(255, 255, 255, .2);
             border-radius: 3px;
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            transition: width .3s ease
+            transition: width .4s cubic-bezier(.4, 0, .2, 1);
         }
 
         .vol-wrap:hover .vol-bar,
         .vol-bar.show {
-            width: 80px
+            width: 100px;
         }
 
         .vol-fill {
             height: 100%;
-            background: linear-gradient(90deg, #8B5CF6, #A78BFA);
+            background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--pink));
             border-radius: 3px;
-            transition: width .1s
+            transition: width .1s;
+            box-shadow: 0 0 12px rgba(139, 92, 246, .7);
         }
 
-        /* SPEED MENU */
+        /* === MENU === */
         .menu-wrap {
-            position: relative
+            position: relative;
         }
 
         .menu {
             position: absolute;
-            bottom: calc(100% + 10px);
+            bottom: calc(100% + 14px);
             right: 0;
-            background: rgba(15, 10, 30, .95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(139, 92, 246, .2);
-            border-radius: 10px;
-            padding: 6px;
-            min-width: 140px;
+            background: rgba(10, 8, 30, .96);
+            backdrop-filter: blur(28px) saturate(200%);
+            -webkit-backdrop-filter: blur(28px) saturate(200%);
+            border: 1px solid rgba(139, 92, 246, .3);
+            border-radius: 14px;
+            padding: 8px;
+            min-width: 170px;
             opacity: 0;
-            transform: translateY(8px);
+            transform: translateY(12px) scale(.92);
             pointer-events: none;
-            transition: all .2s;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, .5)
+            transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, .7), 0 0 40px rgba(139, 92, 246, .2);
         }
 
         .menu.show {
             opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
         }
 
         .menu-item {
-            padding: 8px 14px;
+            padding: 11px 16px;
             font-size: 13px;
-            color: rgba(255, 255, 255, .8);
+            color: rgba(255, 255, 255, .85);
             cursor: pointer;
-            border-radius: 6px;
-            transition: all .15s;
-            font-weight: 500;
+            border-radius: 10px;
+            transition: all .2s;
+            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px
+            gap: 12px;
         }
 
         .menu-item:hover {
-            background: rgba(139, 92, 246, .15);
-            color: #fff
+            background: linear-gradient(135deg, rgba(139, 92, 246, .25), rgba(236, 72, 153, .15));
+            color: #fff;
+            transform: translateX(3px);
         }
 
         .menu-item.active {
-            color: #A78BFA;
-            background: rgba(139, 92, 246, .1)
+            color: var(--primary-light);
+            background: rgba(139, 92, 246, .15);
         }
 
         .menu-item.active::after {
             content: '✓';
-            font-weight: 700
+            font-weight: 800;
+            font-size: 14px;
         }
 
-        /* CONTENT INFO */
+        /* === CONTENT INFO === */
         .content-info {
-            max-width: 1280px;
-            margin: 28px auto;
-            padding: 0 24px
+            max-width: 1400px;
+            margin: 50px auto 0;
+            padding: 0 32px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .content-info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            align-items: start;
         }
 
         .content-info h1 {
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #fff, #c4b5fd);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 56px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            letter-spacing: -2px;
+            line-height: 1;
+            background: linear-gradient(135deg, #fff 0%, #c4b5fd 50%, #ec4899 100%);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleSlide 1s cubic-bezier(.4, 0, .2, 1);
+            filter: drop-shadow(0 4px 20px rgba(139, 92, 246, .3));
+        }
+
+        @keyframes titleSlide {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .content-info .meta {
             display: flex;
             gap: 10px;
             font-size: 13px;
-            color: rgba(255, 255, 255, .6);
-            margin-bottom: 16px;
+            color: rgba(255, 255, 255, .65);
+            margin-bottom: 24px;
             flex-wrap: wrap;
-            align-items: center
+            align-items: center;
+            animation: titleSlide 1s cubic-bezier(.4, 0, .2, 1) .1s both;
         }
 
         .meta-tag {
-            padding: 4px 10px;
+            padding: 7px 14px;
             background: rgba(139, 92, 246, .1);
-            border: 1px solid rgba(139, 92, 246, .2);
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 12px;
-            color: #A78BFA;
-            text-transform: capitalize
+            border: 1px solid rgba(139, 92, 246, .3);
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--primary-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+            transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .meta-tag::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, .2), transparent);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .meta-tag:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, .3);
+        }
+
+        .meta-tag:hover::before {
+            opacity: 1;
         }
 
         .meta-tag.gold {
-            background: rgba(251, 191, 36, .1);
-            border-color: rgba(251, 191, 36, .25);
-            color: #fbbf24
+            background: linear-gradient(135deg, rgba(251, 191, 36, .2), rgba(245, 158, 11, .1));
+            border-color: rgba(251, 191, 36, .45);
+            color: var(--gold);
+            box-shadow: 0 4px 16px rgba(251, 191, 36, .25);
+            animation: goldShimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes goldShimmer {
+
+            0%,
+            100% {
+                box-shadow: 0 4px 16px rgba(251, 191, 36, .25);
+            }
+
+            50% {
+                box-shadow: 0 4px 24px rgba(251, 191, 36, .5);
+            }
         }
 
         .meta-tag.early {
-            background: linear-gradient(135deg, rgba(139, 92, 246, .2), rgba(109, 40, 217, .15));
-            border-color: rgba(139, 92, 246, .3);
-            color: #c4b5fd
+            background: linear-gradient(135deg, rgba(139, 92, 246, .3), rgba(236, 72, 153, .2));
+            border-color: rgba(139, 92, 246, .5);
+            color: var(--accent);
+            box-shadow: 0 4px 16px rgba(139, 92, 246, .3);
         }
 
         .content-info .desc {
-            font-size: 15px;
-            line-height: 1.75;
-            color: rgba(255, 255, 255, .65);
-            max-width: 780px
+            font-size: 17px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, .75);
+            max-width: 880px;
+            font-weight: 400;
+            animation: titleSlide 1s cubic-bezier(.4, 0, .2, 1) .2s both;
         }
 
-        /* ACTION BUTTONS */
         .action-row {
             display: flex;
-            gap: 10px;
-            margin-top: 18px;
-            flex-wrap: wrap
+            gap: 12px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+            animation: titleSlide 1s cubic-bezier(.4, 0, .2, 1) .3s both;
         }
 
         .action-btn {
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, .06);
-            border: 1px solid rgba(255, 255, 255, .1);
-            border-radius: 10px;
+            padding: 14px 26px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 14px;
             color: #fff;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all .2s;
+            transition: all .3s cubic-bezier(.4, 0, .2, 1);
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-family: inherit
+            gap: 10px;
+            font-family: inherit;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.3px;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--primary), var(--pink));
+            opacity: 0;
+            transition: opacity .4s;
+        }
+
+        .action-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, .2), transparent 50%);
+            opacity: 0;
+            transition: opacity .3s;
         }
 
         .action-btn:hover {
-            background: rgba(139, 92, 246, .15);
-            border-color: rgba(139, 92, 246, .3)
+            border-color: rgba(139, 92, 246, .5);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(139, 92, 246, .3);
+        }
+
+        .action-btn:hover::before {
+            opacity: .25;
+        }
+
+        .action-btn:hover::after {
+            opacity: 1;
+        }
+
+        .action-btn>* {
+            position: relative;
+            z-index: 1;
         }
 
         .action-btn.active {
-            background: rgba(139, 92, 246, .2);
-            border-color: #8B5CF6;
-            color: #fff
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-color: var(--primary-light);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, .4);
         }
 
-        /* EPISODES */
+        /* === EPISODES === */
         .episodes {
-            max-width: 1280px;
-            margin: 36px auto;
-            padding: 0 24px
+            max-width: 1400px;
+            margin: 60px auto;
+            padding: 0 32px;
+            position: relative;
+            z-index: 2;
         }
 
         .episodes h2 {
-            font-size: 22px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
             font-weight: 700;
-            margin-bottom: 18px;
+            margin-bottom: 28px;
             display: flex;
             align-items: center;
-            gap: 8px
+            gap: 14px;
+            letter-spacing: -0.8px;
+        }
+
+        .episodes h2::before {
+            content: '';
+            width: 6px;
+            height: 36px;
+            background: linear-gradient(180deg, var(--primary), var(--pink));
+            border-radius: 4px;
+            box-shadow: 0 0 16px rgba(139, 92, 246, .6);
         }
 
         .season-tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 18px;
+            gap: 6px;
+            margin-bottom: 28px;
             flex-wrap: wrap;
-            padding: 6px;
-            background: rgba(255, 255, 255, .02);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, .04);
-            width: fit-content
+            padding: 8px;
+            background: rgba(255, 255, 255, .03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, .06);
+            width: fit-content;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
         }
 
         .season-tab {
-            padding: 9px 20px;
-            border-radius: 8px;
+            padding: 12px 26px;
+            border-radius: 12px;
             background: transparent;
             border: none;
-            color: rgba(255, 255, 255, .5);
+            color: rgba(255, 255, 255, .55);
             cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all .2s;
-            font-family: inherit
+            font-size: 14px;
+            font-weight: 700;
+            transition: all .3s cubic-bezier(.4, 0, .2, 1);
+            font-family: inherit;
+            position: relative;
+            letter-spacing: 0.3px;
         }
 
         .season-tab:hover {
-            color: rgba(255, 255, 255, .8)
+            color: rgba(255, 255, 255, .95);
         }
 
         .season-tab.active {
-            background: linear-gradient(135deg, rgba(139, 92, 246, .2), rgba(109, 40, 217, .15));
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: #fff;
-            box-shadow: 0 2px 8px rgba(139, 92, 246, .2)
+            box-shadow: 0 8px 24px rgba(139, 92, 246, .5);
+            transform: translateY(-1px);
         }
 
         .ep-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
         }
 
         .ep-card {
             display: flex;
             align-items: center;
-            gap: 18px;
-            padding: 16px 18px;
-            background: rgba(255, 255, 255, .025);
-            border: 1px solid rgba(255, 255, 255, .05);
-            border-radius: 14px;
+            gap: 22px;
+            padding: 20px 24px;
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .07);
+            border-radius: 18px;
             cursor: pointer;
-            transition: all .3s;
+            transition: all .4s cubic-bezier(.4, 0, .2, 1);
             position: relative;
-            overflow: hidden
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+        }
+
+        .ep-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, .15), rgba(236, 72, 153, .08) 60%, transparent);
+            opacity: 0;
+            transition: opacity .4s;
+            pointer-events: none;
+        }
+
+        .ep-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            background: linear-gradient(180deg, var(--primary), var(--pink));
+            transition: width .4s cubic-bezier(.4, 0, .2, 1);
         }
 
         .ep-card:hover {
-            background: rgba(139, 92, 246, .06);
-            border-color: rgba(139, 92, 246, .2);
-            transform: translateX(4px)
+            border-color: rgba(139, 92, 246, .4);
+            transform: translateX(8px);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, .2);
+        }
+
+        .ep-card:hover::before {
+            opacity: 1;
+        }
+
+        .ep-card:hover::after {
+            width: 4px;
         }
 
         .ep-card.active {
-            border-color: #8B5CF6;
-            background: rgba(139, 92, 246, .1);
-            box-shadow: 0 4px 16px rgba(139, 92, 246, .15)
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, .14);
+            box-shadow: 0 12px 36px rgba(139, 92, 246, .35);
+        }
+
+        .ep-card.active::before {
+            opacity: 1;
+        }
+
+        .ep-card.active::after {
+            width: 4px;
         }
 
         .ep-num {
-            font-size: 28px;
-            font-weight: 800;
-            color: rgba(139, 92, 246, .5);
-            min-width: 42px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            color: rgba(139, 92, 246, .4);
+            min-width: 56px;
             text-align: center;
-            font-variant-numeric: tabular-nums
+            font-variant-numeric: tabular-nums;
+            transition: all .4s cubic-bezier(.34, 1.56, .64, 1);
+            position: relative;
+            z-index: 1;
+            line-height: 1;
+        }
+
+        .ep-card:hover .ep-num {
+            color: rgba(167, 139, 250, .9);
+            transform: scale(1.1);
+            text-shadow: 0 0 30px rgba(139, 92, 246, .6);
         }
 
         .ep-card.active .ep-num {
-            color: #A78BFA
+            color: var(--primary-light);
+            text-shadow: 0 0 30px rgba(139, 92, 246, .7);
         }
 
         .ep-info {
             flex: 1;
-            min-width: 0
+            min-width: 0;
+            position: relative;
+            z-index: 1;
         }
 
         .ep-info h3 {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 3px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
-            gap: 8px
+            gap: 8px;
+            letter-spacing: -0.3px;
         }
 
         .ep-info p {
-            font-size: 13px;
-            color: rgba(255, 255, 255, .45);
+            font-size: 14px;
+            color: rgba(255, 255, 255, .6);
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical
+            -webkit-box-orient: vertical;
+            line-height: 1.6;
         }
 
         .ep-play {
-            font-size: 18px;
-            opacity: .4;
-            transition: all .2s;
-            width: 38px;
-            height: 38px;
+            font-size: 16px;
+            transition: all .4s cubic-bezier(.34, 1.56, .64, 1);
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(139, 92, 246, .1)
+            background: rgba(139, 92, 246, .15);
+            border: 1px solid rgba(139, 92, 246, .25);
+            position: relative;
+            z-index: 1;
+            flex-shrink: 0;
         }
 
         .ep-card:hover .ep-play {
-            opacity: 1;
-            background: rgba(139, 92, 246, .25);
-            transform: scale(1.1)
+            background: linear-gradient(135deg, var(--primary), var(--pink));
+            border-color: var(--primary-light);
+            transform: scale(1.15);
+            box-shadow: 0 10px 28px rgba(139, 92, 246, .6);
         }
 
-        /* NEXT EPISODE BUTTON */
+        .ep-card.active .ep-play {
+            background: linear-gradient(135deg, var(--primary), var(--pink));
+            border-color: var(--primary-light);
+            box-shadow: 0 10px 28px rgba(139, 92, 246, .5);
+        }
+
+        /* === NEXT EP BUTTON === */
         .next-ep-btn {
-            display: none;
             position: absolute;
-            bottom: 90px;
-            right: 24px;
-            background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+            bottom: 110px;
+            right: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 24px;
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 16px;
+            padding: 16px 24px;
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
             z-index: 10;
             font-family: inherit;
-            transition: all .3s;
+            transition: all .3s cubic-bezier(.4, 0, .2, 1);
             backdrop-filter: blur(8px);
-            box-shadow: 0 8px 24px rgba(139, 92, 246, .5);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, .6);
             display: none;
             align-items: center;
-            gap: 8px
+            gap: 12px;
+            letter-spacing: 0.3px;
         }
 
         .next-ep-btn.show {
             display: inline-flex;
-            animation: slideInRight .4s ease
+            animation: slideInRight .6s cubic-bezier(.34, 1.56, .64, 1);
         }
 
         @keyframes slideInRight {
             from {
-                transform: translateX(120%);
-                opacity: 0
+                transform: translateX(150%);
+                opacity: 0;
             }
 
             to {
                 transform: translateX(0);
-                opacity: 1
+                opacity: 1;
             }
         }
 
         .next-ep-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 12px 32px rgba(139, 92, 246, .7)
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 20px 50px rgba(139, 92, 246, .8);
         }
 
         .next-ep-countdown {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
-            background: rgba(0, 0, 0, .3);
+            width: 30px;
+            height: 30px;
+            background: rgba(0, 0, 0, .4);
             border-radius: 50%;
-            font-size: 12px;
-            font-weight: 800
+            font-size: 13px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            border: 1.5px solid rgba(255, 255, 255, .2);
         }
 
-        /* END SCREEN */
+        /* === END SCREEN === */
         .end-screen {
             position: absolute;
             inset: 0;
-            background: rgba(4, 4, 10, .85);
-            backdrop-filter: blur(8px);
+            background: radial-gradient(ellipse at center, rgba(15, 10, 30, .95), rgba(4, 4, 10, .99));
+            backdrop-filter: blur(20px);
             display: none;
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            gap: 20px;
-            z-index: 7
+            gap: 32px;
+            z-index: 7;
+            animation: fadeIn .5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
         }
 
         .end-screen.show {
-            display: flex
+            display: flex;
         }
 
         .end-screen h2 {
-            font-size: 24px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 40px;
             font-weight: 700;
-            color: #fff
+            background: linear-gradient(135deg, #fff, var(--accent), var(--pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            padding: 0 24px;
+            letter-spacing: -1px;
+            filter: drop-shadow(0 4px 30px rgba(139, 92, 246, .4));
         }
 
         .end-screen-actions {
             display: flex;
-            gap: 12px;
+            gap: 14px;
             flex-wrap: wrap;
-            justify-content: center
+            justify-content: center;
+            padding: 0 24px;
         }
 
         .end-btn {
-            padding: 13px 26px;
+            padding: 16px 32px;
             border: none;
-            border-radius: 10px;
+            border-radius: 14px;
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
             font-family: inherit;
-            transition: all .3s;
+            transition: all .3s cubic-bezier(.4, 0, .2, 1);
             display: inline-flex;
             align-items: center;
-            gap: 8px
+            gap: 10px;
+            letter-spacing: 0.3px;
         }
 
         .end-btn-primary {
-            background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: #fff;
-            box-shadow: 0 4px 16px rgba(139, 92, 246, .4)
+            box-shadow: 0 12px 32px rgba(139, 92, 246, .6);
         }
 
         .end-btn-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 24px rgba(139, 92, 246, .6)
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 18px 44px rgba(139, 92, 246, .8);
         }
 
         .end-btn-secondary {
             background: rgba(255, 255, 255, .08);
             color: #fff;
-            border: 1px solid rgba(255, 255, 255, .15)
+            border: 1px solid rgba(255, 255, 255, .15);
+            backdrop-filter: blur(12px);
         }
 
         .end-btn-secondary:hover {
-            background: rgba(255, 255, 255, .12)
+            background: rgba(255, 255, 255, .15);
+            border-color: rgba(255, 255, 255, .3);
+            transform: translateY(-3px);
         }
 
-        /* ERROR SCREEN */
+        /* === ERROR SCREEN === */
         .error-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            gap: 16px;
+            gap: 24px;
             text-align: center;
-            padding: 20px
+            padding: 28px;
         }
 
         .error-icon {
-            font-size: 64px;
-            opacity: .6
+            font-size: 84px;
+            opacity: .8;
+            filter: drop-shadow(0 10px 30px rgba(139, 92, 246, .4));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-12px);
+            }
         }
 
         .error-text {
-            font-size: 18px;
-            color: rgba(255, 255, 255, .7);
-            max-width: 500px
+            font-size: 20px;
+            color: rgba(255, 255, 255, .8);
+            max-width: 540px;
+            font-weight: 500;
+            line-height: 1.5;
         }
 
         .error-btn {
-            margin-top: 12px;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+            margin-top: 16px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border: none;
-            border-radius: 10px;
+            border-radius: 14px;
             color: #fff;
             font-weight: 700;
             cursor: pointer;
             font-family: inherit;
-            font-size: 14px
+            font-size: 14px;
+            box-shadow: 0 12px 32px rgba(139, 92, 246, .5);
+            transition: all .3s;
         }
 
-        @media(max-width:768px) {
+        .error-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 18px 44px rgba(139, 92, 246, .7);
+        }
+
+        @media (max-width: 768px) {
 
             .content-info,
             .episodes {
-                padding: 0 16px
+                padding: 0 18px;
+            }
+
+            .content-info {
+                margin-top: 28px;
             }
 
             .content-info h1 {
-                font-size: 22px
+                font-size: 36px;
+                letter-spacing: -1.2px;
+            }
+
+            .content-info .desc {
+                font-size: 15px;
             }
 
             .player-wrap {
-                border-radius: 0
+                border-radius: 0;
+            }
+
+            .player-wrap::before {
+                display: none;
+            }
+
+            .ambient-light {
+                display: none;
             }
 
             .ctrl-left,
             .ctrl-right {
-                gap: 8px
+                gap: 1px;
             }
 
             .ctrl-btn {
-                font-size: 18px
+                font-size: 18px;
+                min-width: 36px;
+                height: 36px;
+                padding: 6px;
             }
 
             .time {
-                font-size: 11px
+                font-size: 11px;
+                margin-left: 4px;
+                padding: 3px 8px;
             }
 
             .vol-bar {
-                display: none
+                display: none;
             }
 
             .center-play {
-                width: 68px;
-                height: 68px;
-                font-size: 28px
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
             }
 
             .seek-indicator {
-                padding: 14px 18px
+                padding: 18px 22px;
+            }
+
+            .seek-indicator.left {
+                left: 6%;
+            }
+
+            .seek-indicator.right {
+                right: 6%;
+            }
+
+            .episodes h2 {
+                font-size: 24px;
+            }
+
+            .ep-card {
+                padding: 16px 18px;
+                gap: 16px;
+            }
+
+            .ep-num {
+                font-size: 30px;
+                min-width: 42px;
+            }
+
+            .ep-info h3 {
+                font-size: 15px;
+            }
+
+            .ep-info p {
+                font-size: 12px;
+            }
+
+            .ep-play {
+                width: 42px;
+                height: 42px;
+            }
+
+            .next-ep-btn {
+                bottom: 100px;
+                right: 16px;
+                padding: 13px 18px;
+                font-size: 13px;
+            }
+
+            .back-btn {
+                top: 16px;
+                left: 16px;
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .player-top {
+                padding: 18px 20px 55px;
+            }
+
+            .player-top-title {
+                font-size: 15px;
+            }
+
+            .player-top-sub {
+                font-size: 12px;
+                margin-left: 14px;
+            }
+
+            .end-screen h2 {
+                font-size: 26px;
+            }
+
+            .loading-logo {
+                font-size: 40px;
+                letter-spacing: 6px;
             }
         }
     </style>
 </head>
 
 <body>
+    <div class="mesh-bg">
+        <div class="blob-3"></div>
+    </div>
+    <div class="grid-overlay"></div>
+    <div class="noise"></div>
+    <div class="hero-backdrop"></div>
+
     <a class="back-btn" id="backBtn" href="PMGFlix.html">← Voltar</a>
 
     <div class="loading" id="loadingScreen">
+        <div class="loading-logo">PMGFLIX</div>
         <div class="loading-spinner"></div>
-        <div class="loading-text">Preparando seu conteúdo...</div>
+        <div class="loading-text">Preparando experiência</div>
     </div>
 
     <div id="playerPage" style="display:none">
-        <div class="player-wrap" id="playerWrap">
-            <video id="video" preload="auto"></video>
+        <div class="player-section">
+            <div class="player-wrap" id="playerWrap">
+                <div class="ambient-light"></div>
+                <video id="video" preload="auto"></video>
 
-            <!-- Top title overlay -->
-            <div class="player-top">
-                <div class="player-top-title" id="topTitle"></div>
-                <div class="player-top-sub" id="topSub"></div>
-            </div>
-
-            <!-- Center play button -->
-            <button class="center-play" id="centerPlay" onclick="togglePlay()">▶</button>
-
-            <!-- Seek indicators -->
-            <div class="seek-indicator left" id="seekLeft">
-                <div class="arrow">⏪</div>
-                <div>-10s</div>
-            </div>
-            <div class="seek-indicator right" id="seekRight">
-                <div class="arrow">⏩</div>
-                <div>+10s</div>
-            </div>
-
-            <!-- Next episode button -->
-            <button class="next-ep-btn" id="nextEpBtn" onclick="playNextEp()">
-                Próximo Episódio
-                <span class="next-ep-countdown" id="nextCount">10</span>
-            </button>
-
-            <!-- End screen -->
-            <div class="end-screen" id="endScreen">
-                <h2 id="endTitle">Você assistiu até o fim! 🎉</h2>
-                <div class="end-screen-actions">
-                    <button class="end-btn end-btn-primary" onclick="replay()">🔄 Assistir novamente</button>
-                    <button class="end-btn end-btn-secondary" id="endNextBtn" onclick="playNextEp()"
-                        style="display:none">▶ Próximo episódio</button>
-                    <button class="end-btn end-btn-secondary" onclick="window.location.href='PMGFlix.html'">🏠 Voltar
-                        ao início</button>
+                <div class="player-top">
+                    <div class="player-top-title" id="topTitle"></div>
+                    <div class="player-top-sub" id="topSub"></div>
                 </div>
-            </div>
 
-            <!-- Controls -->
-            <div class="controls" id="controls">
-                <div class="progress-wrap" id="progressWrap">
-                    <div class="time-preview" id="timePreview">0:00</div>
-                    <div class="progress-bar">
-                        <div class="buffered" id="buffered"></div>
-                        <div class="progress-fill" id="progressFill"></div>
+                <button class="center-play" id="centerPlay" onclick="togglePlay()">▶</button>
+
+                <div class="seek-indicator left" id="seekLeft">
+                    <div class="arrow">⏪</div>
+                    <div>-10s</div>
+                </div>
+                <div class="seek-indicator right" id="seekRight">
+                    <div class="arrow">⏩</div>
+                    <div>+10s</div>
+                </div>
+
+                <button class="next-ep-btn" id="nextEpBtn" onclick="playNextEp()">
+                    Próximo Episódio
+                    <span class="next-ep-countdown" id="nextCount">10</span>
+                </button>
+
+                <div class="end-screen" id="endScreen">
+                    <h2 id="endTitle">Você assistiu até o fim! 🎉</h2>
+                    <div class="end-screen-actions">
+                        <button class="end-btn end-btn-primary" onclick="replay()">🔄 Assistir novamente</button>
+                        <button class="end-btn end-btn-secondary" id="endNextBtn" onclick="playNextEp()"
+                            style="display:none">▶ Próximo episódio</button>
+                        <button class="end-btn end-btn-secondary" onclick="window.location.href='PMGFlix.html'">🏠
+                            Voltar ao início</button>
                     </div>
                 </div>
-                <div class="ctrl-row">
-                    <div class="ctrl-left">
-                        <button class="ctrl-btn" id="playBtn" onclick="togglePlay()"
-                            data-tip="Play/Pause (Espaço)">▶</button>
-                        <button class="ctrl-btn" onclick="skip(-10)" data-tip="-10s (←)">⏪</button>
-                        <button class="ctrl-btn" onclick="skip(10)" data-tip="+10s (→)">⏩</button>
-                        <div class="vol-wrap">
-                            <button class="ctrl-btn" id="volBtn" onclick="toggleMute()" data-tip="Mudo (M)">🔊</button>
-                            <div class="vol-bar" id="volBar">
-                                <div class="vol-fill" id="volFill" style="width:100%"></div>
-                            </div>
+
+                <div class="controls" id="controls">
+                    <div class="progress-wrap" id="progressWrap">
+                        <div class="time-preview" id="timePreview">0:00</div>
+                        <div class="progress-bar">
+                            <div class="buffered" id="buffered"></div>
+                            <div class="progress-fill" id="progressFill"></div>
                         </div>
-                        <span class="time" id="timeDisplay">0:00 / 0:00</span>
                     </div>
-                    <div class="ctrl-right">
-                        <div class="menu-wrap">
-                            <button class="ctrl-btn" id="speedBtn" onclick="toggleMenu('speed')"
-                                data-tip="Velocidade">⚡</button>
-                            <div class="menu" id="speedMenu">
-                                <div class="menu-item" onclick="setSpeed(0.5)">0.5x</div>
-                                <div class="menu-item" onclick="setSpeed(0.75)">0.75x</div>
-                                <div class="menu-item active" onclick="setSpeed(1)">Normal</div>
-                                <div class="menu-item" onclick="setSpeed(1.25)">1.25x</div>
-                                <div class="menu-item" onclick="setSpeed(1.5)">1.5x</div>
-                                <div class="menu-item" onclick="setSpeed(2)">2x</div>
+                    <div class="ctrl-row">
+                        <div class="ctrl-left">
+                            <button class="ctrl-btn" id="playBtn" onclick="togglePlay()"
+                                data-tip="Play/Pause">▶</button>
+                            <button class="ctrl-btn" onclick="skip(-10)" data-tip="-10 segundos">⏪</button>
+                            <button class="ctrl-btn" onclick="skip(10)" data-tip="+10 segundos">⏩</button>
+                            <div class="vol-wrap">
+                                <button class="ctrl-btn" id="volBtn" onclick="toggleMute()" data-tip="Mudo">🔊</button>
+                                <div class="vol-bar" id="volBar">
+                                    <div class="vol-fill" id="volFill" style="width:100%"></div>
+                                </div>
                             </div>
+                            <span class="time" id="timeDisplay">0:00 / 0:00</span>
                         </div>
-                        <button class="ctrl-btn" id="subBtn" onclick="toggleSub()" data-tip="Legendas (C)"
-                            style="display:none">💬</button>
-                        <button class="ctrl-btn" onclick="togglePiP()" data-tip="Picture in Picture">🗗</button>
-                        <button class="ctrl-btn" id="fsBtn" onclick="toggleFS()" data-tip="Tela cheia (F)">⛶</button>
+                        <div class="ctrl-right">
+                            <div class="menu-wrap">
+                                <button class="ctrl-btn" id="speedBtn" onclick="toggleMenu('speed')"
+                                    data-tip="Velocidade">⚡</button>
+                                <div class="menu" id="speedMenu">
+                                    <div class="menu-item" onclick="setSpeed(0.5)">0.5x</div>
+                                    <div class="menu-item" onclick="setSpeed(0.75)">0.75x</div>
+                                    <div class="menu-item active" onclick="setSpeed(1)">Normal</div>
+                                    <div class="menu-item" onclick="setSpeed(1.25)">1.25x</div>
+                                    <div class="menu-item" onclick="setSpeed(1.5)">1.5x</div>
+                                    <div class="menu-item" onclick="setSpeed(2)">2x</div>
+                                </div>
+                            </div>
+                            <button class="ctrl-btn" id="subBtn" onclick="toggleSub()" data-tip="Legendas"
+                                style="display:none">💬</button>
+                            <button class="ctrl-btn" onclick="togglePiP()" data-tip="Picture in Picture">🗗</button>
+                            <button class="ctrl-btn" id="fsBtn" onclick="toggleFS()" data-tip="Tela cheia">⛶</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1042,13 +1865,18 @@
     <script>
         const API = localStorage.getItem('pmgflix_api_url') || window.location.origin;
         const TOKEN = () => localStorage.getItem('pmgflix_token');
-        function apiFetch(url, opts = {}) { return fetch(API + url, { ...opts, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN(), ...opts.headers } }).then(r => r.json()) }
+        function apiFetch(url, opts = {}) {
+            return fetch(API + url, {
+                ...opts,
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN(), ...opts.headers }
+            }).then(r => r.json());
+        }
         if (!TOKEN()) { window.location.href = 'index.html'; }
 
         const params = new URLSearchParams(location.search);
         const contentId = params.get('id');
         const episodeId = params.get('ep');
-        let content = null, currentEpId = null, seasons = [], watchedEps = new Set(), epProgress = {};
+        let content = null, currentEpId = null, seasons = [];
         let autoNextTimer = null, autoNextCountdown = 10;
 
         const video = document.getElementById('video');
@@ -1063,13 +1891,12 @@
         const volBar = document.getElementById('volBar');
         const playerWrap = document.getElementById('playerWrap');
 
-        // ── INIT ────────────────────────────────────────
         async function init() {
-            if (!contentId) { showError('Conteúdo não encontrado', '📭'); return }
+            if (!contentId) { showError('Conteúdo não encontrado', '📭'); return; }
             try {
                 content = await apiFetch('/contents/' + contentId);
-                if (!content || content.error) { showError(content?.error || 'Conteúdo não disponível', '⚠️'); return }
-                if (!content.accessible) { showError(content.reason, '🔒'); return }
+                if (!content || content.error) { showError(content?.error || 'Conteúdo não disponível', '⚠️'); return; }
+                if (!content.accessible) { showError(content.reason, '🔒'); return; }
 
                 document.title = content.title + ' — PMGFlix';
                 document.getElementById('topTitle').textContent = content.title;
@@ -1087,45 +1914,45 @@
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('playerPage').style.display = 'block';
                 document.getElementById('backBtn').classList.add('show');
-            } catch (e) { showError('Erro ao carregar conteúdo', '⚠️') }
+            } catch (e) { showError('Erro ao carregar conteúdo', '⚠️'); }
         }
 
         function showError(msg, icon) {
             document.getElementById('loadingScreen').innerHTML = `
-        <div class="error-screen">
-            <div class="error-icon">${icon}</div>
-            <div class="error-text">${msg}</div>
-            <button class="error-btn" onclick="window.location.href='PMGFlix.html'">← Voltar ao início</button>
-        </div>
-    `;
+                <div class="error-screen">
+                    <div class="error-icon">${icon}</div>
+                    <div class="error-text">${msg}</div>
+                    <button class="error-btn" onclick="window.location.href='PMGFlix.html'">← Voltar ao início</button>
+                </div>`;
         }
 
         function renderContentInfo() {
             const planBadge = content.required_plan !== 'gratis' ? `<span class="meta-tag gold">⭐ ${content.required_plan.toUpperCase()}</span>` : '';
             const earlyBadge = content.early_access ? '<span class="meta-tag early">🔮 Acesso antecipado</span>' : '';
             document.getElementById('contentInfo').innerHTML = `
-        <h1>${content.title}</h1>
-        <div class="meta">
-            <span class="meta-tag">${content.type}</span>
-            ${content.category ? `<span class="meta-tag">${content.category}</span>` : ''}
-            ${planBadge}
-            ${earlyBadge}
-        </div>
-        <p class="desc">${content.description || 'Sem descrição disponível.'}</p>
-        <div class="action-row">
-            <button class="action-btn" onclick="copyLink()">🔗 Copiar link</button>
-            <button class="action-btn" onclick="toggleSub()">💬 Legendas</button>
-        </div>
-    `;
+                <h1>${content.title}</h1>
+                <div class="meta">
+                    <span class="meta-tag">${content.type}</span>
+                    ${content.category ? `<span class="meta-tag">${content.category}</span>` : ''}
+                    ${planBadge}
+                    ${earlyBadge}
+                </div>
+                <p class="desc">${content.description || 'Sem descrição disponível.'}</p>
+                <div class="action-row">
+                    <button class="action-btn" onclick="copyLink()">🔗 Copiar link</button>
+                    <button class="action-btn" onclick="toggleSub()">💬 Legendas</button>
+                </div>`;
         }
 
         async function startWatch(cid, eid, videoUrl, subUrl) {
-            const res = await apiFetch('/watch/start', { method: 'POST', body: JSON.stringify({ content_id: parseInt(cid), episode_id: eid ? parseInt(eid) : null }) });
-            if (!res.allowed) { showError(res.reason || 'Acesso negado', '🔒'); return }
+            const res = await apiFetch('/watch/start', {
+                method: 'POST',
+                body: JSON.stringify({ content_id: parseInt(cid), episode_id: eid ? parseInt(eid) : null })
+            });
+            if (!res.allowed) { showError(res.reason || 'Acesso negado', '🔒'); return; }
             video.src = res.videoUrl || videoUrl;
             currentEpId = eid;
 
-            // Update top subtitle for episodes
             if (eid) {
                 const ep = findEpisode(eid);
                 if (ep) document.getElementById('topSub').textContent = `T${ep._seasonNum} • E${ep.episode_number} • ${ep.title}`;
@@ -1133,25 +1960,23 @@
                 document.getElementById('topSub').textContent = content.category || '';
             }
 
-            // Subtitles
             video.querySelectorAll('track').forEach(t => t.remove());
             const sub = res.subtitleUrl || subUrl;
             if (sub) {
                 const track = document.createElement('track');
                 track.kind = 'subtitles'; track.label = 'Português'; track.srclang = 'pt'; track.src = sub; track.default = true;
                 video.appendChild(track);
-                document.getElementById('subBtn').style.display = 'inline';
+                document.getElementById('subBtn').style.display = 'inline-flex';
             } else {
                 document.getElementById('subBtn').style.display = 'none';
             }
 
-            // Restore progress
             if (res.progress && res.progress.progress_seconds > 5 && !res.progress.completed) {
                 video.currentTime = res.progress.progress_seconds;
             }
 
             document.getElementById('endScreen').classList.remove('show');
-            video.play().catch(() => { centerPlay.classList.add('show') });
+            video.play().catch(() => { centerPlay.classList.add('show'); });
             playBtn.textContent = '⏸';
             centerPlay.textContent = '⏸';
         }
@@ -1159,7 +1984,7 @@
         function findEpisode(epId) {
             for (const s of seasons) {
                 for (const e of (s.episodes || [])) {
-                    if (e.id == epId) { e._seasonNum = s.season_number; return e }
+                    if (e.id == epId) { e._seasonNum = s.season_number; return e; }
                 }
             }
             return null;
@@ -1171,7 +1996,7 @@
             startWatch(contentId, epId, ep.video_url, ep.subtitle_url);
             document.querySelectorAll('.ep-card').forEach(c => c.classList.remove('active'));
             const card = document.querySelector(`.ep-card[data-id="${epId}"]`);
-            if (card) { card.classList.add('active'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) }
+            if (card) { card.classList.add('active'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
             history.replaceState(null, '', `player.html?id=${contentId}&ep=${epId}`);
             document.getElementById('nextEpBtn').classList.remove('show');
             clearAutoNext();
@@ -1180,7 +2005,7 @@
         function renderEpisodes() {
             const sec = document.getElementById('episodesSection');
             sec.style.display = 'block';
-            let html = '<h2>📺 Episódios</h2><div class="season-tabs">';
+            let html = '<h2>Episódios</h2><div class="season-tabs">';
             seasons.forEach((s, i) => {
                 html += `<button class="season-tab ${i === 0 ? 'active' : ''}" onclick="showSeason(${i},this)">${s.title || 'Temporada ' + s.season_number}</button>`;
             });
@@ -1190,13 +2015,13 @@
                 (s.episodes || []).forEach(ep => {
                     const isActive = currentEpId == ep.id;
                     html += `<div class="ep-card ${isActive ? 'active' : ''}" data-id="${ep.id}" onclick="playEpisode(${ep.id})">
-                <div class="ep-num">${String(ep.episode_number).padStart(2, '0')}</div>
-                <div class="ep-info">
-                    <h3>${ep.title}</h3>
-                    <p>${ep.description || 'Sem descrição'}</p>
-                </div>
-                <div class="ep-play">▶</div>
-            </div>`;
+                        <div class="ep-num">${String(ep.episode_number).padStart(2, '0')}</div>
+                        <div class="ep-info">
+                            <h3>${ep.title}</h3>
+                            <p>${ep.description || 'Sem descrição'}</p>
+                        </div>
+                        <div class="ep-play">▶</div>
+                    </div>`;
                 });
                 html += '</div>';
             });
@@ -1207,10 +2032,9 @@
             document.querySelectorAll('.season-tab').forEach(t => t.classList.remove('active'));
             btn.classList.add('active');
             document.querySelectorAll('.season-list').forEach(l => l.style.display = 'none');
-            document.querySelector(`.season-list[data-season="${idx}"]`).style.display = 'flex';
+            document.querySelector(`.season-list[data-season="${idx}"]`).style.display = 'grid';
         }
 
-        // ── PLAYER CONTROLS ────────────────────────────
         function togglePlay() {
             if (video.paused) {
                 video.play();
@@ -1224,7 +2048,6 @@
             }
         }
 
-        // Seek backward/forward
         function skip(s) {
             video.currentTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + s));
             const ind = document.getElementById(s < 0 ? 'seekLeft' : 'seekRight');
@@ -1247,7 +2070,7 @@
 
         function toggleMenu(name) {
             const menu = document.getElementById(name + 'Menu');
-            document.querySelectorAll('.menu').forEach(m => { if (m !== menu) m.classList.remove('show') });
+            document.querySelectorAll('.menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
             menu.classList.toggle('show');
             event.stopPropagation();
         }
@@ -1255,7 +2078,7 @@
 
         function toggleSub() {
             const tracks = video.textTracks;
-            if (!tracks.length) { return }
+            if (!tracks.length) return;
             const showing = tracks[0].mode === 'showing';
             tracks[0].mode = showing ? 'hidden' : 'showing';
             document.getElementById('subBtn').classList.toggle('active', !showing);
@@ -1269,23 +2092,21 @@
         }
 
         function toggleFS() {
-            if (!document.fullscreenElement) { playerWrap.requestFullscreen?.(); playerWrap.classList.add('fullscreen') }
-            else { document.exitFullscreen?.(); playerWrap.classList.remove('fullscreen') }
+            if (!document.fullscreenElement) { playerWrap.requestFullscreen?.(); playerWrap.classList.add('fullscreen'); }
+            else { document.exitFullscreen?.(); playerWrap.classList.remove('fullscreen'); }
         }
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) playerWrap.classList.remove('fullscreen');
-            document.getElementById('fsBtn').textContent = document.fullscreenElement ? '⛶' : '⛶';
         });
 
         function copyLink() {
             navigator.clipboard.writeText(window.location.href);
-            const btn = event.target;
+            const btn = event.target.closest('.action-btn');
             const txt = btn.textContent;
             btn.textContent = '✅ Copiado!';
             setTimeout(() => btn.textContent = txt, 2000);
         }
 
-        // Replay video
         function replay() {
             video.currentTime = 0;
             document.getElementById('endScreen').classList.remove('show');
@@ -1293,14 +2114,12 @@
             playBtn.textContent = '⏸';
         }
 
-        // ── VIDEO EVENTS ───────────────────────────────
         video.addEventListener('timeupdate', () => {
             if (!video.duration) return;
             const pct = (video.currentTime / video.duration) * 100;
             progressFill.style.width = pct + '%';
             timeDisplay.textContent = fmt(video.currentTime) + ' / ' + fmt(video.duration);
 
-            // Show next episode button when 95% complete on series
             if (content?.type !== 'filme' && currentEpId && pct > 95 && !autoNextTimer) {
                 const next = findNextEpisode();
                 if (next) {
@@ -1317,8 +2136,12 @@
             }
         });
 
-        video.addEventListener('play', () => { playBtn.textContent = '⏸'; centerPlay.classList.remove('show') });
-        video.addEventListener('pause', () => { playBtn.textContent = '▶'; centerPlay.textContent = '▶'; if (!video.ended) centerPlay.classList.add('show') });
+        video.addEventListener('play', () => { playBtn.textContent = '⏸'; centerPlay.classList.remove('show'); });
+        video.addEventListener('pause', () => {
+            playBtn.textContent = '▶';
+            centerPlay.textContent = '▶';
+            if (!video.ended) centerPlay.classList.add('show');
+        });
         video.addEventListener('click', togglePlay);
 
         video.addEventListener('volumechange', () => {
@@ -1326,7 +2149,6 @@
             document.getElementById('volBtn').textContent = video.muted || video.volume === 0 ? '🔇' : (video.volume > .5 ? '🔊' : '🔉');
         });
 
-        // Double-click to fullscreen, but also handle double-click seek on sides
         video.addEventListener('dblclick', (e) => {
             const rect = video.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -1335,7 +2157,6 @@
             else toggleFS();
         });
 
-        // Progress bar interaction
         progressWrap.addEventListener('click', e => {
             const r = progressWrap.getBoundingClientRect();
             const pct = (e.clientX - r.left) / r.width;
@@ -1357,25 +2178,31 @@
             video.muted = false;
         });
 
-        // ── PROGRESS SAVING ────────────────────────────
         setInterval(() => {
             if (!video.paused && video.duration && contentId) {
                 apiFetch('/watch/progress', {
-                    method: 'PATCH', body: JSON.stringify({
-                        content_id: parseInt(contentId), episode_id: currentEpId ? parseInt(currentEpId) : null,
-                        progress_seconds: video.currentTime, progress_percent: (video.currentTime / video.duration) * 100, completed: false
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        content_id: parseInt(contentId),
+                        episode_id: currentEpId ? parseInt(currentEpId) : null,
+                        progress_seconds: video.currentTime,
+                        progress_percent: (video.currentTime / video.duration) * 100,
+                        completed: false
                     })
                 }).catch(() => { });
             }
         }, 5000);
 
-        // ── END HANDLING ───────────────────────────────
         video.addEventListener('ended', () => {
             playBtn.textContent = '▶';
             apiFetch('/watch/progress', {
-                method: 'PATCH', body: JSON.stringify({
-                    content_id: parseInt(contentId), episode_id: currentEpId ? parseInt(currentEpId) : null,
-                    progress_seconds: video.duration, progress_percent: 100, completed: true
+                method: 'PATCH',
+                body: JSON.stringify({
+                    content_id: parseInt(contentId),
+                    episode_id: currentEpId ? parseInt(currentEpId) : null,
+                    progress_seconds: video.duration,
+                    progress_percent: 100,
+                    completed: true
                 })
             }).catch(() => { });
 
@@ -1408,12 +2235,12 @@
             autoNextTimer = setInterval(() => {
                 autoNextCountdown--;
                 document.getElementById('nextCount').textContent = autoNextCountdown;
-                if (autoNextCountdown <= 0) { clearAutoNext(); playNextEp() }
+                if (autoNextCountdown <= 0) { clearAutoNext(); playNextEp(); }
             }, 1000);
         }
 
         function clearAutoNext() {
-            if (autoNextTimer) { clearInterval(autoNextTimer); autoNextTimer = null }
+            if (autoNextTimer) { clearInterval(autoNextTimer); autoNextTimer = null; }
         }
 
         function playNextEp() {
@@ -1432,7 +2259,6 @@
             return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}` : `${m}:${String(sec).padStart(2, '0')}`;
         }
 
-        // ── KEYBOARD SHORTCUTS ─────────────────────────
         document.addEventListener('keydown', e => {
             if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
             switch (e.code) {
@@ -1447,14 +2273,12 @@
                 case 'KeyP': togglePiP(); break;
                 case 'Digit0': case 'Numpad0': video.currentTime = 0; break;
             }
-            // Number keys 1-9 jump to %
             if (e.code.startsWith('Digit') || e.code.startsWith('Numpad')) {
                 const n = parseInt(e.key);
                 if (n >= 1 && n <= 9 && video.duration) video.currentTime = video.duration * (n / 10);
             }
         });
 
-        // ── HIDE CONTROLS ──────────────────────────────
         let hideTimer;
         function showControls() {
             document.getElementById('controls').classList.add('show');
