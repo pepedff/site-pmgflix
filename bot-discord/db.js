@@ -203,6 +203,33 @@ function autoSeedOwner() {
 }
 autoSeedOwner();
 
+// AUTO-SEED CONTENTS IF EMPTY
+function autoSeedContents() {
+    try {
+        const findByTitle = db.prepare('SELECT * FROM contents WHERE title = ?');
+
+        // Seed "DOSAGEM LETAL"
+        if (!findByTitle.get('DOSAGEM LETAL')) {
+            contentStmts.create.run(
+                'filme',
+                'DOSAGEM LETAL',
+                'Quando pessoas começam a desaparecer sem deixar rastros, Rafael mergulha em uma investigação sombria para descobrir a identidade do impostor que se esconde entre os seus. Mas a verdade está trancada em um porão — e cada dose pode ser a última.',
+                '/uploads/posters/1779209525589-l4nxcx64x.jpeg',
+                'Suspense',
+                'gratis',
+                1,
+                '/uploads/videos/1779209525595-a50ymvnvb6c.mp4',
+                null,
+                1
+            );
+            console.log('[DB] Seeding: Filme "DOSAGEM LETAL" importado com sucesso!');
+        }
+    } catch (e) {
+        console.error('[DB] Erro no auto-seeding de conteúdos:', e.message);
+    }
+}
+autoSeedContents();
+
 // Garante que o OWNER_ID tem is_owner
 function setOwnerByDiscordId(discordId) {
     const user = userStmts.findByDiscord.get(discordId);

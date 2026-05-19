@@ -9,7 +9,7 @@ bot-discord/data/
 *.db-wal
 
 # Media uploads (videos, posters, subtitles)
-bot-discord/uploads/
+# bot-discord/uploads/
 
 # Environment configurations and keys
 .env
