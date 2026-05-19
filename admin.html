@@ -1070,7 +1070,12 @@
             <td><span style="font-size:13px;text-transform:capitalize">${c.type}</span></td>
             <td><span class="badge badge-${c.required_plan}">${c.required_plan}</span></td>
             <td><span style="color:rgba(255,255,255,.6)">${c.category || '—'}</span></td>
-            <td><button class="btn btn-danger btn-sm" onclick="deleteContent(${c.id},'${(c.title || '').replace(/'/g, "\\'")}')">🗑️ Excluir</button></td>
+            <td>
+                <div style="display:flex; gap:8px;">
+                    ${c.type === 'filme' ? `<button class="btn btn-sm" style="padding:5px 12px;font-size:11px;background:rgba(139,92,246,.12);color:#A78BFA;border:1px solid rgba(139,92,246,.25);border-radius:6px;cursor:pointer;font-weight:600" onclick="openReplaceVideoModal(${c.id},'${(c.title || '').replace(/'/g, "\\'")}')">🎞️ Substituir</button>` : ''}
+                    <button class="btn btn-danger btn-sm" onclick="deleteContent(${c.id},'${(c.title || '').replace(/'/g, "\\'")}')">🗑️ Excluir</button>
+                </div>
+            </td>
         </tr>
     `).join('');
         }
@@ -1153,7 +1158,104 @@
 
         // Initial load
         loadStats();
+
+        // --- REPLACE VIDEO MODAL LOGIC ---
+        function openReplaceVideoModal(id, title) {
+            document.getElementById('replace_contentId').value = id;
+            document.getElementById('modalMovieTitle').textContent = '🎞️ Substituir Vídeo — ' + title;
+            document.getElementById('replace_videoFile').value = '';
+            document.getElementById('replaceVideoModal').style.display = 'flex';
+        }
+
+        function closeReplaceVideoModal() {
+            document.getElementById('replaceVideoModal').style.display = 'none';
+        }
+
+        async function submitReplaceVideo(e) {
+            e.preventDefault();
+            const id = document.getElementById('replace_contentId').value;
+            const file = document.getElementById('replace_videoFile').files[0];
+            if (!file) {
+                showMsg('⚠️ Selecione um arquivo de vídeo', false);
+                return;
+            }
+
+            const btn = document.getElementById('replaceSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = 'Enviando...';
+
+            const fd = new FormData();
+            fd.append('video', file);
+
+            const xhr = new XMLHttpRequest();
+            const prog = document.getElementById('replaceUploadProgress');
+            const bar = document.getElementById('replaceProgressBar');
+            prog.classList.add('show');
+
+            xhr.upload.addEventListener('progress', (ev) => {
+                if (ev.lengthComputable) {
+                    const pct = (ev.loaded / ev.total) * 100;
+                    bar.style.width = pct + '%';
+                }
+            });
+
+            xhr.onload = () => {
+                prog.classList.remove('show');
+                bar.style.width = '0%';
+                btn.disabled = false;
+                btn.innerHTML = 'Substituir';
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.message) {
+                        showMsg('✅ Vídeo substituído com sucesso!', true);
+                        closeReplaceVideoModal();
+                        loadContents();
+                    } else {
+                        showMsg('❌ Erro: ' + (data.error || data.message || 'desconhecido'), false);
+                    }
+                } catch (err) {
+                    showMsg('❌ Erro ao processar resposta', false);
+                }
+            };
+
+            xhr.onerror = () => {
+                prog.classList.remove('show');
+                btn.disabled = false;
+                btn.innerHTML = 'Substituir';
+                showMsg('❌ Falha na conexão', false);
+            };
+
+            xhr.open('PATCH', API + '/admin/content/' + id);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + TK());
+            xhr.send(fd);
+        }
     </script>
+
+    <!-- MODAL SUBSTITUIR VÍDEO -->
+    <div id="replaceVideoModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); z-index:1000; align-items:center; justify-content:center;">
+        <div class="form-card" style="width:100%; max-width:500px; margin:20px; position:relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            <button onclick="closeReplaceVideoModal()" style="position:absolute; top:20px; right:20px; background:none; border:none; color:rgba(255,255,255,0.6); font-size:20px; cursor:pointer; transition:color 0.2s;">✕</button>
+            <h2 id="modalMovieTitle" style="font-size:20px; font-weight:800; margin-bottom:6px; background:linear-gradient(135deg, #c4b5fd, #8B5CF6); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">🎞️ Substituir Vídeo</h2>
+            <p class="subtitle" style="margin-bottom:20px;">Selecione o novo arquivo de vídeo para este filme</p>
+            
+            <form id="replaceVideoForm" onsubmit="submitReplaceVideo(event)">
+                <input type="hidden" id="replace_contentId">
+                <div class="field" style="margin-bottom:20px;">
+                    <label>Novo Arquivo de Vídeo</label>
+                    <input type="file" id="replace_videoFile" accept="video/*" required style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(139, 92, 246, 0.2); border-radius:8px; color:white;">
+                </div>
+                
+                <div class="progress" id="replaceUploadProgress" style="margin-bottom:20px;">
+                    <div class="progress-bar" id="replaceProgressBar"></div>
+                </div>
+                
+                <div style="display:flex; gap:12px; justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeReplaceVideoModal()" style="padding:10px 20px;">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="replaceSubmitBtn" style="padding:10px 20px;">Substituir</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>
