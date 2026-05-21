@@ -1447,6 +1447,7 @@
                 <div class="logo">PMGFlix</div>
                 <nav class="nav">
                     <a href="#" class="active">Início</a>
+                    <a href="#" onclick="document.getElementById('noticias').scrollIntoView({ behavior: 'smooth' }); return false;">Notícias</a>
                     <a href="#">Filmes</a>
                     <a href="#">Séries</a>
                     <a href="#">Minha Lista</a>
@@ -1498,6 +1499,60 @@
         </section>
 
         <section class="sections"></section>
+
+        <!-- NEWS SECTION -->
+        <section class="news-section reveal" id="noticias" style="padding: 60px 4% 30px 4%; position: relative; z-index: 10;">
+            <div class="news-eyebrow" style="font-size: 11px; font-weight: 700; color: #A78BFA; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; text-align: center;">📢 Novidades & Comunicados</div>
+            <h2 class="news-title" style="font-size: 38px; font-weight: 800; text-align: center; margin-bottom: 12px; background: linear-gradient(135deg, #fff, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Mural de Notícias PMGFlix</h2>
+            <p class="news-sub" style="font-size: 14px; color: rgba(255,255,255,0.6); text-align: center; max-width: 600px; margin: 0 auto 40px auto; line-height: 1.6;">Fique por dentro de todas as atualizações, lançamentos de conteúdos e melhorias na plataforma!</p>
+            
+            <div class="news-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto;">
+                <!-- Card 1 -->
+                <div class="news-card" style="background: rgba(20, 15, 35, 0.45); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; padding: 24px; backdrop-filter: blur(12px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px;" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <span style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;">NOVO RECURSO</span>
+                            <span style="font-size: 12px; color: rgba(255, 255, 255, 0.45);">Hoje</span>
+                        </div>
+                        <h3 style="font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.4;">Aba de Notícias Lançada! 🎉</h3>
+                        <p style="font-size: 13.5px; color: rgba(255,255,255,0.65); line-height: 1.6;">Acabamos de implementar este lindo mural de novidades! A partir de agora, você poderá acompanhar atualizações de sistema, novos recursos e comunicados diretamente da sua conta.</p>
+                    </div>
+                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; display: flex; align-items: center; color: #A78BFA; font-size: 13px; font-weight: 600;">
+                        <span>Por: Admin Pedrinho</span>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="news-card" style="background: rgba(20, 15, 35, 0.45); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; padding: 24px; backdrop-filter: blur(12px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px;" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <span style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;">ESTREIA</span>
+                            <span style="font-size: 12px; color: rgba(255, 255, 255, 0.45);">Ontem</span>
+                        </div>
+                        <h3 style="font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.4;">Duna: Parte 2 em Destaque 🏜️</h3>
+                        <p style="font-size: 13.5px; color: rgba(255,255,255,0.65); line-height: 1.6;">O aclamado épico de ficção científica Duna: Parte 2 já está disponível em nosso catálogo de alta qualidade. Vivencie a jornada épica de Paul Atreides com som imersivo Dolby Atmos!</p>
+                    </div>
+                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; display: flex; align-items: center; color: #A78BFA; font-size: 13px; font-weight: 600;">
+                        <span>Por: Curadoria PMGFlix</span>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="news-card" style="background: rgba(20, 15, 35, 0.45); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; padding: 24px; backdrop-filter: blur(12px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px;" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <span style="background: linear-gradient(135deg, #a78bfa, #7c3aed); color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;">EM BREVE</span>
+                            <span style="font-size: 12px; color: rgba(255, 255, 255, 0.45);">Esta semana</span>
+                        </div>
+                        <h3 style="font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.4;">App Oficial para Smart TVs 📺</h3>
+                        <p style="font-size: 13.5px; color: rgba(255,255,255,0.65); line-height: 1.6;">Nossa equipe de engenharia está finalizando o aplicativo nativo do PMGFlix para sistemas Android TV e Roku. Muito em breve você assistirá à sua lista diretamente no sofá!</p>
+                    </div>
+                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; display: flex; align-items: center; color: #A78BFA; font-size: 13px; font-weight: 600;">
+                        <span>Por: Tecnologia</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <section class="premium-section reveal" id="premium">
             <div class="premium-eyebrow">✦ Planos Exclusivos</div>
@@ -2137,6 +2192,7 @@
             <div class="troll-reveal-card" id="trollRevealCard">
                 <h2>😂😂 TROLLADO(A)!</h2>
                 <p>O site não vai acabar de verdade! É apenas uma zoeira do Pedrinho! Hahaha!</p>
+                <p><strong>E a grande novidade:</strong> Acabamos de lançar a nossa nova <strong>Aba de Notícias</strong> no mural abaixo para você ficar por dentro de todos os novos lançamentos e melhorias! Corre lá para ver! 🚀📢</p>
                 <p>Pode continuar assistindo seus filmes e séries favoritos em paz! ❤️🎬</p>
                 <div class="troll-modal-footer">
                     <button class="troll-btn-refund" id="btnBackToNormal" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9); box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);">Ufa, que susto! 😂</button>
@@ -2184,7 +2240,12 @@
                 document.getElementById('trollModalContent').style.borderColor = '#fbbf24';
             });
 
-            btnBackToNormal.addEventListener('click', closeModal);
+            btnBackToNormal.addEventListener('click', () => {
+                closeModal();
+                setTimeout(() => {
+                    document.getElementById('noticias').scrollIntoView({ behavior: 'smooth' });
+                }, 350);
+            });
         })();
     </script>
 </body>
