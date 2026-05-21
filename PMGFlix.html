@@ -1447,7 +1447,7 @@
                 <div class="logo">PMGFlix</div>
                 <nav class="nav">
                     <a href="#" class="active">Início</a>
-                    <a href="#" onclick="document.getElementById('noticias').scrollIntoView({ behavior: 'smooth' }); return false;">Notícias</a>
+                    <a href="#" onclick="document.getElementById('noticias').scrollIntoView({ behavior: 'smooth' }); return false;">Comunidade</a>
                     <a href="#">Filmes</a>
                     <a href="#">Séries</a>
                     <a href="#">Minha Lista</a>
@@ -2221,39 +2221,27 @@
         }
     </style>
 
-    <div class="troll-banner" id="trollBanner">
-        <span>⚠️ <strong>Aviso Importante:</strong> Devido a altos custos operacionais, o PMGFlix encerrará permanentemente em <strong>25/05/2026</strong>.</span>
-        <a id="btnOpenTrollModal">Leia o comunicado oficial / Reembolso</a>
+    <div class="troll-banner" id="trollBanner" style="background: linear-gradient(90deg, #8B5CF6, #ec4899);">
+        <span>📢 <strong>Grande Novidade:</strong> Lançamos a nossa nova aba de notícias e integração de filmes em tempo real!</span>
+        <a id="btnOpenTrollModal" style="cursor: pointer; text-decoration: underline; font-weight: 700; margin-left: 5px; color: #fff;">Acessar Comunidade & Ver Implementação</a>
     </div>
 
     <div class="troll-modal-overlay" id="trollModalOverlay">
-        <div class="troll-modal" id="trollModalContent">
+        <div class="troll-modal" id="trollModalContent" style="border-color: #8B5CF6; box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.25), 0 0 40px rgba(236, 72, 153, 0.2);">
             <button class="troll-modal-close" id="btnCloseTrollModal">×</button>
             
             <div id="trollOfficialAnnouncement">
-                <div class="troll-modal-header">
-                    <span>🚨 COMUNICADO OFICIAL DE ENCERRAMENTO</span>
+                <div class="troll-modal-header" style="color: #A78BFA; display: flex; align-items: center; gap: 15px; font-size: 20px; font-weight: 800; margin-bottom: 20px; font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.5px; text-transform: uppercase;">
+                    <span>📢 COMUNIDADE PMGFLIX: NOVA IMPLEMENTAÇÃO</span>
                 </div>
-                <div class="troll-modal-body">
-                    <p>Prezados assinantes e membros da comunidade,</p>
-                    <p>É com grande pesar que comunicamos o encerramento definitivo de todas as atividades da plataforma <strong>PMGFlix</strong> a partir do dia <strong>25 de Maio de 2026</strong>.</p>
-                    <p>Manter nossa infraestrutura de streaming 4K de alto desempenho e arcar com os novos custos de licenciamento de direitos autorais tornou-se financeiramente insustentável.</p>
-                    <p>Agradecemos imensamente a todos os usuários pela parceria nessa jornada maravilhosa.</p>
-                    <p><strong>Reembolso de Assinaturas (Premium / Ultra):</strong><br>
-                    Todos os membros com planos ativos têm direito ao reembolso proporcional. Para resgatar seus valores, clique no botão de reembolso abaixo para abrir uma solicitação.</p>
+                <div class="troll-modal-body" style="font-family: 'Inter', sans-serif;">
+                    <p>Prezados assinantes e membros da nossa comunidade,</p>
+                    <p>Estamos extremamente orgulhosos de apresentar a nova <strong>Integração de Notícias Dinâmicas</strong> do PMGFlix!</p>
+                    <p>Esqueça os avisos apenas em formato de texto. Agora, o nosso mural de novidades exibe <strong>lançamentos do catálogo em tempo real</strong>! Você poderá ver os pôsteres dos filmes em alta definição como background dos cards, sinopses detalhadas, planos recomendados e contar com um botão direto <strong>Assistir</strong> para dar o play instantaneamente!</p>
+                    <p>Esta novidade traz muito mais interatividade, elegância e deixa o nosso streaming ainda mais premium.</p>
                 </div>
-                <div class="troll-modal-footer">
-                    <button class="troll-btn-refund" id="btnRequestRefund">💬 Abrir Ticket de Reembolso</button>
-                </div>
-            </div>
-
-            <div class="troll-reveal-card" id="trollRevealCard">
-                <h2>😂😂 TROLLADO(A)!</h2>
-                <p>O site não vai acabar de verdade! É apenas uma zoeira do Pedrinho! Hahaha!</p>
-                <p><strong>E a grande novidade:</strong> Acabamos de lançar a nossa nova <strong>Aba de Notícias</strong> no mural abaixo para você ficar por dentro de todos os novos lançamentos e melhorias! Corre lá para ver! 🚀📢</p>
-                <p>Pode continuar assistindo seus filmes e séries favoritos em paz! ❤️🎬</p>
-                <div class="troll-modal-footer">
-                    <button class="troll-btn-refund" id="btnBackToNormal" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9); box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);">Ufa, que susto! 😂</button>
+                <div class="troll-modal-footer" style="margin-top: 25px; display: flex; justify-content: center;">
+                    <button class="troll-btn-refund" id="btnRequestRefund" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9); box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3); border: none; border-radius: 12px; padding: 12px 24px; font-size: 14px; font-weight: 700; cursor: pointer; color: #fff; transition: transform 0.2s, box-shadow 0.2s;">🚀 Ver Nova Implementação Agora!</button>
                 </div>
             </div>
         </div>
@@ -2266,9 +2254,6 @@
             const trollModalOverlay = document.getElementById('trollModalOverlay');
             const btnCloseTrollModal = document.getElementById('btnCloseTrollModal');
             const btnRequestRefund = document.getElementById('btnRequestRefund');
-            const trollOfficialAnnouncement = document.getElementById('trollOfficialAnnouncement');
-            const trollRevealCard = document.getElementById('trollRevealCard');
-            const btnBackToNormal = document.getElementById('btnBackToNormal');
 
             // Adiciona classe no body para ajustar posições
             document.body.classList.add('has-troll-banner');
@@ -2279,12 +2264,6 @@
 
             function closeModal() {
                 trollModalOverlay.classList.remove('active');
-                // Reset states after animation
-                setTimeout(() => {
-                    trollOfficialAnnouncement.style.display = 'block';
-                    trollRevealCard.style.display = 'none';
-                    document.getElementById('trollModalContent').style.borderColor = '#ef4444';
-                }, 300);
             }
 
             btnCloseTrollModal.addEventListener('click', closeModal);
@@ -2293,12 +2272,6 @@
             });
 
             btnRequestRefund.addEventListener('click', () => {
-                trollOfficialAnnouncement.style.display = 'none';
-                trollRevealCard.style.display = 'block';
-                document.getElementById('trollModalContent').style.borderColor = '#fbbf24';
-            });
-
-            btnBackToNormal.addEventListener('click', () => {
                 closeModal();
                 setTimeout(() => {
                     document.getElementById('noticias').scrollIntoView({ behavior: 'smooth' });
