@@ -2056,6 +2056,244 @@
         loadContents();
     </script>
 
+    <!-- ========================================== -->
+    <!-- ⚠️ TROLL AVISO DE ENCERRAMENTO (Troll do Pedrinho) -->
+    <!-- ========================================== -->
+    <style>
+        .troll-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(90deg, #dc2626, #7c3aed);
+            color: #ffffff;
+            text-align: center;
+            padding: 10px 24px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 100000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Inter', sans-serif;
+            animation: slideDown 0.5s ease-out;
+        }
+        .troll-banner a {
+            color: #f59e0b;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 700;
+            margin-left: 5px;
+            transition: color 0.2s;
+        }
+        .troll-banner a:hover {
+            color: #ffffff;
+        }
+        .troll-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 5, 17, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100001;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .troll-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .troll-modal {
+            background: linear-gradient(135deg, #150a25, #0a0515);
+            border: 2px solid #ef4444;
+            border-radius: 20px;
+            padding: 35px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25), 0 0 40px rgba(109, 40, 217, 0.2);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .troll-modal-overlay.active .troll-modal {
+            transform: scale(1);
+        }
+        .troll-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .troll-modal-close:hover {
+            color: #ffffff;
+        }
+        .troll-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #ef4444;
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+        .troll-modal-body p {
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: #d1d5db;
+            margin-bottom: 15px;
+        }
+        .troll-modal-body strong {
+            color: #ffffff;
+        }
+        .troll-modal-footer {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+        }
+        .troll-btn-refund {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .troll-btn-refund:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px rgba(239, 68, 68, 0.5);
+        }
+        .troll-reveal-card {
+            display: none;
+            text-align: center;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .troll-reveal-card h2 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: #fbbf24;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .troll-reveal-card p {
+            font-size: 17px;
+            line-height: 1.6;
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        /* Ajustar o corpo da página para dar espaço ao banner */
+        body.has-troll-banner {
+            padding-top: 40px !important;
+        }
+        body.has-troll-banner .header {
+            top: 40px !important;
+        }
+    </style>
+
+    <div class="troll-banner" id="trollBanner">
+        <span>⚠️ <strong>Aviso Importante:</strong> Devido a altos custos operacionais, o PMGFlix encerrará permanentemente em <strong>25/05/2026</strong>.</span>
+        <a id="btnOpenTrollModal">Leia o comunicado oficial / Reembolso</a>
+    </div>
+
+    <div class="troll-modal-overlay" id="trollModalOverlay">
+        <div class="troll-modal" id="trollModalContent">
+            <button class="troll-modal-close" id="btnCloseTrollModal">×</button>
+            
+            <div id="trollOfficialAnnouncement">
+                <div class="troll-modal-header">
+                    <span>🚨 COMUNICADO OFICIAL DE ENCERRAMENTO</span>
+                </div>
+                <div class="troll-modal-body">
+                    <p>Prezados assinantes e membros da comunidade,</p>
+                    <p>É com grande pesar que comunicamos o encerramento definitivo de todas as atividades da plataforma <strong>PMGFlix</strong> a partir do dia <strong>25 de Maio de 2026</strong>.</p>
+                    <p>Manter nossa infraestrutura de streaming 4K de alto desempenho e arcar com os novos custos de licenciamento de direitos autorais tornou-se financeiramente insustentável.</p>
+                    <p>Agradecemos imensamente a todos os usuários pela parceria nessa jornada maravilhosa.</p>
+                    <p><strong>Reembolso de Assinaturas (Premium / Ultra):</strong><br>
+                    Todos os membros com planos ativos têm direito ao reembolso proporcional. Para resgatar seus valores, clique no botão de reembolso abaixo para abrir uma solicitação.</p>
+                </div>
+                <div class="troll-modal-footer">
+                    <button class="troll-btn-refund" id="btnRequestRefund">💬 Abrir Ticket de Reembolso</button>
+                </div>
+            </div>
+
+            <div class="troll-reveal-card" id="trollRevealCard">
+                <h2>😂😂 TROLLADO(A)!</h2>
+                <p>O site não vai acabar de verdade! É apenas uma zoeira do Pedrinho! Hahaha!</p>
+                <p>Pode continuar assistindo seus filmes e séries favoritos em paz! ❤️🎬</p>
+                <div class="troll-modal-footer">
+                    <button class="troll-btn-refund" id="btnBackToNormal" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9); box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);">Ufa, que susto! 😂</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const trollBanner = document.getElementById('trollBanner');
+            const btnOpenTrollModal = document.getElementById('btnOpenTrollModal');
+            const trollModalOverlay = document.getElementById('trollModalOverlay');
+            const btnCloseTrollModal = document.getElementById('btnCloseTrollModal');
+            const btnRequestRefund = document.getElementById('btnRequestRefund');
+            const trollOfficialAnnouncement = document.getElementById('trollOfficialAnnouncement');
+            const trollRevealCard = document.getElementById('trollRevealCard');
+            const btnBackToNormal = document.getElementById('btnBackToNormal');
+
+            // Adiciona classe no body para ajustar posições
+            document.body.classList.add('has-troll-banner');
+
+            btnOpenTrollModal.addEventListener('click', () => {
+                trollModalOverlay.classList.add('active');
+            });
+
+            function closeModal() {
+                trollModalOverlay.classList.remove('active');
+                // Reset states after animation
+                setTimeout(() => {
+                    trollOfficialAnnouncement.style.display = 'block';
+                    trollRevealCard.style.display = 'none';
+                    document.getElementById('trollModalContent').style.borderColor = '#ef4444';
+                }, 300);
+            }
+
+            btnCloseTrollModal.addEventListener('click', closeModal);
+            trollModalOverlay.addEventListener('click', (e) => {
+                if (e.target === trollModalOverlay) closeModal();
+            });
+
+            btnRequestRefund.addEventListener('click', () => {
+                trollOfficialAnnouncement.style.display = 'none';
+                trollRevealCard.style.display = 'block';
+                document.getElementById('trollModalContent').style.borderColor = '#fbbf24';
+            });
+
+            btnBackToNormal.addEventListener('click', closeModal);
+        })();
+    </script>
 </body>
 
 </html>
