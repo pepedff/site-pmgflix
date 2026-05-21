@@ -1928,6 +1928,7 @@
 
                 const cats = {};
                 contents.forEach(c => {
+                    if (c.type === 'noticia') return; // Exclui notícias do catálogo principal
                     const cat = c.category || 'Outros';
                     if (!cats[cat]) cats[cat] = [];
                     cats[cat].push(c);
@@ -1946,17 +1947,20 @@
             const newsGrid = document.getElementById('newsGrid');
             if (!newsGrid) return;
 
-            // Filter for custom self-published news videos
+            // Filter for custom self-published news videos or dedicated noticia type
             const newsContents = contents.filter(c => 
+                c.type === 'noticia' ||
                 ['notícias', 'noticia', 'documentário', 'documentario', 'vídeos', 'videos', 'vídeo', 'video'].includes((c.category || '').trim().toLowerCase())
             );
 
             let html = '';
             if (newsContents.length > 0) {
                 newsContents.forEach(item => {
-                    const badgeText = (item.category || 'Notícias').toUpperCase();
+                    const badgeText = (item.type === 'noticia') ? 'NOTÍCIA' : (item.category || 'Notícias').toUpperCase();
                     let icon = '📢';
-                    if (['documentário', 'documentario'].includes((item.category || '').trim().toLowerCase())) {
+                    if (item.type === 'noticia') {
+                        icon = '📰';
+                    } else if (['documentário', 'documentario'].includes((item.category || '').trim().toLowerCase())) {
                         icon = '🎞️';
                     } else if (['vídeos', 'videos', 'vídeo', 'video'].includes((item.category || '').trim().toLowerCase())) {
                         icon = '🎥';

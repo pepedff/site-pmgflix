@@ -1299,6 +1299,7 @@
                                 <option value="filme">🎬 Filme</option>
                                 <option value="serie">📺 Série</option>
                                 <option value="minisserie">🎞️ Minissérie</option>
+                                <option value="noticia">📰 Notícia</option>
                             </select></div>
                         <div class="field"><label>Categoria</label>
                             <input id="f_category" placeholder="Ex: Suspense, Ação, Terror">
@@ -1396,6 +1397,7 @@
                         <option value="filme">🎬 Filmes</option>
                         <option value="serie">📺 Séries</option>
                         <option value="minisserie">🎞️ Minisséries</option>
+                        <option value="noticia">📰 Notícias</option>
                     </select>
                     <select id="filterPlan" onchange="filterContents()">
                         <option value="">Todos os planos</option>
@@ -1523,9 +1525,9 @@
 
         function updateForm() {
             const t = document.getElementById('f_type').value;
-            document.getElementById('videoField').style.display = t === 'filme' ? 'block' : 'none';
-            document.getElementById('subField').style.display = t === 'filme' ? 'block' : 'none';
-            document.getElementById('seasonsSection').style.display = t !== 'filme' ? 'block' : 'none';
+            document.getElementById('videoField').style.display = (t === 'filme' || t === 'noticia') ? 'block' : 'none';
+            document.getElementById('subField').style.display = (t === 'filme' || t === 'noticia') ? 'block' : 'none';
+            document.getElementById('seasonsSection').style.display = (t !== 'filme' && t !== 'noticia') ? 'block' : 'none';
         }
 
         function resetForm() {
@@ -1665,7 +1667,7 @@
                     <td><span style="color:rgba(255,255,255,.6);font-size:13px">${c.category || '—'}</span></td>
                     <td>
                         <div style="display:flex; gap:8px;">
-                            ${c.type === 'filme' ? `<button class="btn btn-sm" style="padding:6px 14px;font-size:11px;background:rgba(139,92,246,.15);color:var(--primary-light);border:1px solid rgba(139,92,246,.3);border-radius:8px;cursor:pointer;font-weight:700" onclick="openReplaceVideoModal(${c.id},'${(c.title || '').replace(/'/g, "\\'")}')">🎞️ Substituir</button>` : ''}
+                            ${(c.type === 'filme' || c.type === 'noticia') ? `<button class="btn btn-sm" style="padding:6px 14px;font-size:11px;background:rgba(139,92,246,.15);color:var(--primary-light);border:1px solid rgba(139,92,246,.3);border-radius:8px;cursor:pointer;font-weight:700" onclick="openReplaceVideoModal(${c.id},'${(c.title || '').replace(/'/g, "\\'")}')">🎞️ Substituir</button>` : ''}
                             <button class="btn btn-danger btn-sm" onclick="deleteContent(${c.id},'${(c.title || '').replace(/'/g, "\\'")}')">🗑️ Excluir</button>
                         </div>
                     </td>

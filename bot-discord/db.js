@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS contents (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    type TEXT NOT NULL CHECK(type IN ('filme','serie','minisserie')),
+    type TEXT NOT NULL CHECK(type IN ('filme','serie','minisserie','noticia')),
     title TEXT NOT NULL,
     description TEXT,
     poster_url TEXT,
@@ -77,6 +77,60 @@ CREATE TABLE IF NOT EXISTS watch_progress (
     UNIQUE(user_id, content_id, episode_id)
 );
 `);
+
+// ============================================================
+// 🔄 MIGRAÇÃO — Suporte ao Tipo 'noticia' na Tabela de Conteúdos
+// ============================================================
+try {
+    // Tenta inserir temporariamente um conteúdo do tipo 'noticia' para testar a restrição
+    db.exec("SAVEPOINT check_noticia; INSERT INTO contents (type, title) VALUES ('noticia', 'test_migration'); ROLLBACK TO check_noticia; RELEASE check_noticia;");
+} catch (e) {
+    console.log('[DB] Iniciando migração da tabela "contents" para suportar o tipo "noticia"...');
+    try {
+        db.transaction(() => {
+            // Desabilita verificação de chaves estrangeiras temporariamente
+            db.exec('PRAGMA foreign_keys = OFF;');
+
+            // 1. Cria a nova tabela temporária com a restrição CHECK atualizada
+            db.exec(`
+                CREATE TABLE contents_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    type TEXT NOT NULL CHECK(type IN ('filme','serie','minisserie','noticia')),
+                    title TEXT NOT NULL,
+                    description TEXT,
+                    poster_url TEXT,
+                    category TEXT,
+                    required_plan TEXT DEFAULT 'gratis' CHECK(required_plan IN ('gratis','premium','ultra')),
+                    early_access INTEGER DEFAULT 0,
+                    video_url TEXT,
+                    subtitle_url TEXT,
+                    featured INTEGER DEFAULT 0,
+                    created_at TEXT DEFAULT (datetime('now'))
+                );
+            `);
+
+            // 2. Copia todos os dados da tabela antiga para a nova
+            db.exec(`
+                INSERT INTO contents_new (id, type, title, description, poster_url, category, required_plan, early_access, video_url, subtitle_url, featured, created_at)
+                SELECT id, type, title, description, poster_url, category, required_plan, early_access, video_url, subtitle_url, featured, created_at
+                FROM contents;
+            `);
+
+            // 3. Remove a tabela antiga
+            db.exec('DROP TABLE contents;');
+
+            // 4. Renomeia a tabela nova para o nome oficial
+            db.exec('ALTER TABLE contents_new RENAME TO contents;');
+
+            // Reabilita chaves estrangeiras
+            db.exec('PRAGMA foreign_keys = ON;');
+        })();
+        console.log('[DB] Tabela "contents" migrada com sucesso!');
+    } catch (err) {
+        console.error('[DB] Falha crítica na migração da tabela contents:', err.message);
+    }
+}
+
 
 // ============================================================
 // USERS
