@@ -1482,15 +1482,15 @@
             <div class="hero-rays"></div>
             <div class="hero-content">
                 <div class="hero-badge">Original PMGFlix</div>
-                <h1 class="hero-title">DUNA: <span>PARTE 2</span></h1>
+                <h1 class="hero-title">DOSAGEM: <span>LETAL</span></h1>
                 <div class="hero-meta">
-                    <span>2024</span>
-                    <span class="tag">14+</span>
-                    <span>2h 46min</span>
-                    <span>Ficção Científica / Épico</span>
-                    <span class="rating">★ 8.9</span>
+                    <span>2026</span>
+                    <span class="tag">Livre</span>
+                    <span>1h 45min</span>
+                    <span>Suspense / Investigação</span>
+                    <span class="rating">★ 9.2</span>
                 </div>
-                <p class="hero-desc">Paul Atreides se une a Chani e aos Fremen em uma jornada de vingança contra os conspiradores que destruíram sua família, lutando para evitar um futuro terrível que só ele pode prever.</p>
+                <p class="hero-desc">Quando pessoas começam a desaparecer sem deixar rastros, Rafael mergulha em uma investigação sombria para descobrir a identidade do impostor que se esconde entre os seus. Mas a verdade está trancada em um porão — e cada dose pode ser a última.</p>
                 <div class="hero-buttons">
                     <button class="btn btn-primary" onclick="openContent(1)"><span class="btn-icon">▶</span> Assistir Agora</button>
                     <button class="btn btn-secondary" onclick="document.getElementById('premium').scrollIntoView({ behavior: 'smooth' })"><span class="btn-icon">✦</span> Planos Premium</button>
@@ -1506,7 +1506,7 @@
             <h2 class="news-title" style="font-size: 38px; font-weight: 800; text-align: center; margin-bottom: 12px; background: linear-gradient(135deg, #fff, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Mural de Notícias PMGFlix</h2>
             <p class="news-sub" style="font-size: 14px; color: rgba(255,255,255,0.6); text-align: center; max-width: 600px; margin: 0 auto 40px auto; line-height: 1.6;">Fique por dentro de todas as atualizações, lançamentos de conteúdos e melhorias na plataforma!</p>
             
-            <div class="news-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto;">
+            <div class="news-grid" id="newsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto;">
                 <!-- Card 1 -->
                 <div class="news-card" style="background: rgba(20, 15, 35, 0.45); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; padding: 24px; backdrop-filter: blur(12px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px;" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
                     <div>
@@ -1863,6 +1863,8 @@
                 const contents = await apiFetch('/contents');
                 if (!Array.isArray(contents)) return;
 
+                populateNewsSection(contents);
+
                 const featured = contents.find(c => c.featured === 1);
                 if (featured) {
                     const heroEl = document.querySelector('.hero');
@@ -1938,6 +1940,76 @@
             } catch (e) {
                 console.log('Sem conteúdos da API:', e.message);
             }
+        }
+
+        function populateNewsSection(contents) {
+            const newsGrid = document.getElementById('newsGrid');
+            if (!newsGrid) return;
+
+            let html = `
+                <!-- Card 1: Plataforma -->
+                <div class="news-card" style="background: rgba(20, 15, 35, 0.45); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; padding: 24px; backdrop-filter: blur(12px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px;" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <span style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;">NOVO RECURSO</span>
+                            <span style="font-size: 12px; color: rgba(255, 255, 255, 0.45);">Hoje</span>
+                        </div>
+                        <h3 style="font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.4;">Aba de Notícias Lançada! 🎉</h3>
+                        <p style="font-size: 13.5px; color: rgba(255,255,255,0.65); line-height: 1.6;">Acabamos de implementar este lindo mural de novidades! A partir de agora, você poderá acompanhar atualizações de sistema, novos recursos e comunicados diretamente da sua conta.</p>
+                    </div>
+                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; display: flex; align-items: center; color: #A78BFA; font-size: 13px; font-weight: 600;">
+                        <span>Por: Admin Pedrinho</span>
+                    </div>
+                </div>
+            `;
+
+            const recentContents = contents.slice(0, 2);
+            recentContents.forEach(item => {
+                const badgeText = item.type === 'serie' ? 'NOVA SÉRIE' : 'NOVO FILME';
+                const badgeBg = item.type === 'serie' ? 'linear-gradient(135deg, #a78bfa, #7c3aed)' : 'linear-gradient(135deg, #ec4899, #db2777)';
+                const bannerStyle = item.poster_url 
+                    ? `background: linear-gradient(to top, rgba(9, 7, 20, 0.95) 30%, rgba(9, 7, 20, 0.4) 100%), url('${item.poster_url}'); background-size: cover; background-position: center;` 
+                    : `background: rgba(20, 15, 35, 0.45);`;
+
+                html += `
+                    <!-- Card Dinâmico de Filme/Série -->
+                    <div class="news-card" style="${bannerStyle} border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 20px; padding: 24px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 280px;" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.65)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.3)';">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <span style="background: ${badgeBg}; color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;">${badgeText}</span>
+                                <span style="font-size: 12px; color: rgba(255, 255, 255, 0.6); font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">ESTREIA</span>
+                            </div>
+                            <h3 style="font-size: 21px; font-weight: 800; color: #fff; margin-bottom: 8px; line-height: 1.3; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">${item.title}</h3>
+                            <p style="font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.55; text-shadow: 0 1px 3px rgba(0,0,0,0.8); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px;">${item.description || 'Assista a esta super novidade agora mesmo no PMGFlix!'}</p>
+                        </div>
+                        <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 14px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #A78BFA; font-size: 12px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Plano: ${item.required_plan === 'gratis' ? 'Livre' : item.required_plan.toUpperCase()}</span>
+                            <button onclick="openContent(${item.id})" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9); color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); transition: all 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">▶ Assistir</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (recentContents.length < 2) {
+                html += `
+                    <!-- Card 3: App Smart TV -->
+                    <div class="news-card" style="background: rgba(20, 15, 35, 0.45); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; padding: 24px; backdrop-filter: blur(12px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px;" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <span style="background: linear-gradient(135deg, #a78bfa, #7c3aed); color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;">EM BREVE</span>
+                                <span style="font-size: 12px; color: rgba(255, 255, 255, 0.45);">Esta semana</span>
+                            </div>
+                            <h3 style="font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.4;">App Oficial para Smart TVs 📺</h3>
+                            <p style="font-size: 13.5px; color: rgba(255,255,255,0.65); line-height: 1.6;">Nossa equipe de engenharia está finalizando o aplicativo nativo do PMGFlix para sistemas Android TV e Roku. Muito em breve você assistirá à sua lista diretamente no sofá!</p>
+                        </div>
+                        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; display: flex; align-items: center; color: #A78BFA; font-size: 13px; font-weight: 600;">
+                            <span>Por: Tecnologia</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            newsGrid.innerHTML = html;
         }
 
         function renderCategorySection(container, title, items) {
