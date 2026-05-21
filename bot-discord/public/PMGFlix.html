@@ -2053,69 +2053,106 @@
             const newsGrid = document.getElementById('newsGrid');
             if (!newsGrid) return;
 
-            let html = `
-                <!-- Card 1: Plataforma -->
-                <div class="news-card" style="background: rgba(20, 15, 35, 0.45); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; padding: 24px; backdrop-filter: blur(12px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px;" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <span style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;">NOVO RECURSO</span>
-                            <span style="font-size: 12px; color: rgba(255, 255, 255, 0.45);">Hoje</span>
+            // Filter for custom self-published news videos
+            const newsContents = contents.filter(c => 
+                ['notícias', 'noticia', 'documentário', 'documentario', 'vídeos', 'videos', 'vídeo', 'video'].includes((c.category || '').trim().toLowerCase())
+            );
+
+            let html = '';
+            if (newsContents.length > 0) {
+                newsContents.forEach(item => {
+                    const badgeText = (item.category || 'Notícias').toUpperCase();
+                    let icon = '📢';
+                    if (['documentário', 'documentario'].includes((item.category || '').trim().toLowerCase())) {
+                        icon = '🎞️';
+                    } else if (['vídeos', 'videos', 'vídeo', 'video'].includes((item.category || '').trim().toLowerCase())) {
+                        icon = '🎥';
+                    }
+                    
+                    const bannerStyle = item.poster_url 
+                        ? `background: linear-gradient(to top, rgba(9, 7, 20, 0.95) 30%, rgba(9, 7, 20, 0.4) 100%), url('${item.poster_url}'); background-size: cover; background-position: center;` 
+                        : `background: linear-gradient(135deg, rgba(20, 15, 35, 0.6) 0%, rgba(139, 92, 246, 0.1) 100%);`;
+                    
+                    html += `
+                        <div class="news-card animate-hover" style="${bannerStyle} border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 20px; padding: 24px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); display: flex; flex-direction: column; justify-content: space-between; min-height: 300px; transition: all 0.3s ease; position: relative; overflow: hidden;"
+                             onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.65)'; this.style.boxShadow='0 20px 48px rgba(139, 92, 246, 0.2)';" 
+                             onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.25)'; this.style.boxShadow='0 12px 40px rgba(0,0,0,0.4)';">
+                            
+                            <div style="position: absolute; inset: 0; background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.15), transparent 60%); pointer-events: none;"></div>
+                            
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; z-index: 2;">
+                                    <span style="background: linear-gradient(135deg, #ec4899, #8B5CF6); color: #fff; font-size: 10px; font-weight: 800; padding: 5px 12px; border-radius: 99px; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(236, 72, 153, 0.2);">${icon} ${badgeText}</span>
+                                    <span style="font-size: 11px; color: rgba(255, 255, 255, 0.65); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Estreia Oficial</span>
+                                </div>
+                                <h3 style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 10px; line-height: 1.35; text-shadow: 0 2px 4px rgba(0,0,0,0.6); position: relative; z-index: 2;">${item.title}</h3>
+                                <p style="font-size: 13.5px; color: rgba(255,255,255,0.85); line-height: 1.6; text-shadow: 0 1px 3px rgba(0,0,0,0.8); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 15px; position: relative; z-index: 2;">${item.description || 'Assista a este documentário / vídeo exclusivo diretamente no PMGFlix!'}</p>
+                            </div>
+                            
+                            <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 16px; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2;">
+                                <span style="font-size: 11px; color: #A78BFA; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Plano: ${item.required_plan === 'gratis' ? 'Grátis' : item.required_plan.toUpperCase()}</span>
+                                <button onclick="openContent(${item.id})" style="background: linear-gradient(135deg, #ec4899, #8B5CF6); color: #fff; border: none; border-radius: 10px; padding: 8px 18px; font-size: 12.5px; font-weight: 800; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px; box-shadow: 0 6px 20px rgba(236, 72, 153, 0.35);" 
+                                        onmouseover="this.style.transform='scale(1.04)'; this.style.filter='brightness(1.15)';" 
+                                        onmouseout="this.style.transform='scale(1)'; this.style.filter='none';">
+                                    ▶ Assistir Vídeo
+                                </button>
+                            </div>
                         </div>
-                        <h3 style="font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.4;">Aba de Notícias Lançada! 🎉</h3>
-                        <p style="font-size: 13.5px; color: rgba(255,255,255,0.65); line-height: 1.6;">Acabamos de implementar este lindo mural de novidades! A partir de agora, você poderá acompanhar atualizações de sistema, novos recursos e comunicados diretamente da sua conta.</p>
-                    </div>
-                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; display: flex; align-items: center; color: #A78BFA; font-size: 13px; font-weight: 600;">
-                        <span>Por: Admin Pedrinho</span>
-                    </div>
-                </div>
-            `;
+                    `;
+                });
+            } else {
+                // PREMIUM FALLBACK & TUTORIAL
+                let isOwner = false;
+                try {
+                    const user = JSON.parse(localStorage.getItem('pmgflix_user'));
+                    isOwner = user && user.is_owner;
+                } catch (e) { }
 
-            const recentContents = contents.slice(0, 2);
-            recentContents.forEach(item => {
-                const badgeText = item.type === 'serie' ? 'NOVA SÉRIE' : 'NOVO FILME';
-                const badgeBg = item.type === 'serie' ? 'linear-gradient(135deg, #a78bfa, #7c3aed)' : 'linear-gradient(135deg, #ec4899, #db2777)';
-                const bannerStyle = item.poster_url 
-                    ? `background: linear-gradient(to top, rgba(9, 7, 20, 0.95) 30%, rgba(9, 7, 20, 0.4) 100%), url('${item.poster_url}'); background-size: cover; background-position: center;` 
-                    : `background: rgba(20, 15, 35, 0.45);`;
+                html = `
+                    <!-- Premium Fallback Banner -->
+                    <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 24px; text-align: center; background: linear-gradient(135deg, rgba(20, 15, 35, 0.5) 0%, rgba(139, 92, 246, 0.05) 100%); border: 1px solid rgba(139, 92, 246, 0.18); border-radius: 24px; backdrop-filter: blur(12px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); margin-bottom: 20px;">
+                        <span style="font-size: 54px; margin-bottom: 16px; display: inline-block; filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.6));">🎞️</span>
+                        <h3 style="font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif;">Nenhum Documentário ou Vídeo de Notícia</h3>
+                        <p style="font-size: 14px; color: rgba(255,255,255,0.65); max-width: 500px; line-height: 1.6; margin-bottom: 0;">O mural de notícias em vídeo está pronto para receber documentários exclusivos, matérias jornalísticas e conteúdos especiais em formato de filme!</p>
+                    </div>
 
-                html += `
-                    <!-- Card Dinâmico de Filme/Série -->
-                    <div class="news-card" style="${bannerStyle} border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 20px; padding: 24px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 280px;" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.65)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.3)';">
+                    <!-- Interactive Tutorial Card -->
+                    <div class="news-card" style="background: linear-gradient(135deg, rgba(9, 7, 20, 0.8) 0%, rgba(139, 92, 246, 0.08) 100%); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; min-height: 300px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                                <span style="background: linear-gradient(135deg, #06b6d4, #0891b2); color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;">TUTORIAL ADMIN</span>
+                                <span style="font-size: 11px; color: rgba(255,255,255,0.45); font-weight: 600;">Como Publicar</span>
+                            </div>
+                            <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 10px; line-height: 1.4;">Publique Vídeos na Comunidade!</h3>
+                            <ul style="color: rgba(255,255,255,0.75); font-size: 12.5px; padding-left: 18px; line-height: 1.6; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px;">
+                                <li>Acesse o <strong>Painel Admin</strong> do site.</li>
+                                <li>Publique um conteúdo do tipo <strong>Filme</strong> ou <strong>Série</strong>.</li>
+                                <li>Defina a Categoria como <strong>Notícias</strong>, <strong>Documentário</strong> ou <strong>Vídeos</strong>.</li>
+                                <li>Anexe o arquivo de vídeo e poster oficial do documentário.</li>
+                            </ul>
+                        </div>
+                        ${isOwner ? `
+                            <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 10px;">
+                                <button onclick="window.location.href='admin.html'" style="width: 100%; background: linear-gradient(135deg, #8B5CF6, #6D28D9); color: #fff; border: none; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35); text-align: center; display: inline-block;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                    ⚙️ Ir ao Painel Admin
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Decorative Card 2 -->
+                    <div class="news-card" style="background: rgba(20, 15, 35, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; min-height: 300px; opacity: 0.65;">
                         <div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                                <span style="background: ${badgeBg}; color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;">${badgeText}</span>
-                                <span style="font-size: 12px; color: rgba(255, 255, 255, 0.6); font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">ESTREIA</span>
+                                <span style="background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 99px;">PREMIUM PLAYER</span>
                             </div>
-                            <h3 style="font-size: 21px; font-weight: 800; color: #fff; margin-bottom: 8px; line-height: 1.3; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">${item.title}</h3>
-                            <p style="font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.55; text-shadow: 0 1px 3px rgba(0,0,0,0.8); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px;">${item.description || 'Assista a esta super novidade agora mesmo no PMGFlix!'}</p>
+                            <h3 style="font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 10px;">Player de Alta Definição 🎬</h3>
+                            <p style="font-size: 12.5px; color: rgba(255,255,255,0.5); line-height: 1.55;">Nossas notícias e documentários contam com suporte a player premium com controles de velocidade, qualidade adaptativa e legendas personalizadas para uma experiência imersiva completa.</p>
                         </div>
-                        <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 14px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #A78BFA; font-size: 12px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Plano: ${item.required_plan === 'gratis' ? 'Livre' : item.required_plan.toUpperCase()}</span>
-                            <button onclick="openContent(${item.id})" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9); color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); transition: all 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">▶ Assistir</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            if (recentContents.length < 2) {
-                html += `
-                    <!-- Card 3: App Smart TV -->
-                    <div class="news-card" style="background: rgba(20, 15, 35, 0.45); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; padding: 24px; backdrop-filter: blur(12px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px;" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='rgba(139, 92, 246, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                                <span style="background: linear-gradient(135deg, #a78bfa, #7c3aed); color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;">EM BREVE</span>
-                                <span style="font-size: 12px; color: rgba(255, 255, 255, 0.45);">Esta semana</span>
-                            </div>
-                            <h3 style="font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 10px; line-height: 1.4;">App Oficial para Smart TVs 📺</h3>
-                            <p style="font-size: 13.5px; color: rgba(255,255,255,0.65); line-height: 1.6;">Nossa equipe de engenharia está finalizando o aplicativo nativo do PMGFlix para sistemas Android TV e Roku. Muito em breve você assistirá à sua lista diretamente no sofá!</p>
-                        </div>
-                        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; display: flex; align-items: center; color: #A78BFA; font-size: 13px; font-weight: 600;">
-                            <span>Por: Tecnologia</span>
-                        </div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.35); font-weight: 600;">PMGFlix Media Team</div>
                     </div>
                 `;
             }
-
             newsGrid.innerHTML = html;
         }
 
