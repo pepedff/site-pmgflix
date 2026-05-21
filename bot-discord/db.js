@@ -151,29 +151,76 @@ const watchStmts = {
 };
 
 // ============================================================
-// MIGRAÇÃO — Importa usuários do JSON existente
+// MIGRAÇÃO — Importa e sincroniza usuários do JSON existente
 // ============================================================
 function migrateFromJSON() {
-    const jsonPath = path.join(DATA_DIR, 'users.json');
-    if (!fs.existsSync(jsonPath)) return;
-    try {
-        const data = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
-        const users = data.users || [];
-        if (users.length === 0) return;
+    const paths = new Set([
+        path.join(DATA_DIR, 'users.json'),
+        path.join(__dirname, 'data', 'users.json')
+    ]);
 
+    let mergedUsers = [];
+    const seenUsernames = new Set();
+
+    for (const p of paths) {
+        if (!fs.existsSync(p)) continue;
+        try {
+            const data = JSON.parse(fs.readFileSync(p, 'utf-8'));
+            const users = data.users || [];
+            for (const u of users) {
+                if (!u.username) continue;
+                const normalized = u.username.toLowerCase();
+                if (!seenUsernames.has(normalized)) {
+                    seenUsernames.add(normalized);
+                    mergedUsers.push(u);
+                }
+            }
+        } catch (e) {
+            console.error(`[MIGRAÇÃO] Erro ao ler ${p}:`, e.message);
+        }
+    }
+
+    if (mergedUsers.length === 0) return;
+
+    try {
         const existing = userStmts.all.all();
         const planMap = { '⭐ Premium': 'premium', '💎 Ultra': 'ultra' };
 
-        for (const u of users) {
-            if (existing.find(e => e.username === u.username)) continue;
-            const plan = planMap[u.plano] || 'gratis';
-            try {
-                userStmts.create.run(u.username, u.passwordHash, u.discordId || null, plan, u.status === 'ativo' ? 'ativo' : 'inativo', 0);
-                console.log(`[MIGRAÇÃO] Usuário importado: ${u.username} (${plan})`);
-            } catch (e) { /* skip duplicates */ }
+        for (const u of mergedUsers) {
+            const plan = planMap[u.plano] || u.planoKey || u.plan || 'gratis';
+            const status = u.status === 'ativo' ? 'ativo' : 'inativo';
+            const discordId = u.discordId || null;
+            const existingUser = existing.find(e => e.username.toLowerCase() === u.username.toLowerCase());
+
+            if (existingUser) {
+                // Se o usuário existe, verifica se houve alterações (senha, plano, discord_id, status)
+                const needsUpdate = 
+                    existingUser.password_hash !== u.passwordHash ||
+                    existingUser.plan !== plan ||
+                    existingUser.discord_id !== discordId ||
+                    existingUser.status !== status;
+
+                if (needsUpdate) {
+                    try {
+                        db.prepare('UPDATE users SET password_hash = ?, plan = ?, discord_id = ?, status = ? WHERE id = ?')
+                          .run(u.passwordHash, plan, discordId, status, existingUser.id);
+                        console.log(`[MIGRAÇÃO] Usuário sincronizado/atualizado: ${u.username} (${plan})`);
+                    } catch (err) {
+                        console.error(`[MIGRAÇÃO] Erro ao atualizar ${u.username}:`, err.message);
+                    }
+                }
+            } else {
+                // Se não existe, cria
+                try {
+                    userStmts.create.run(u.username, u.passwordHash, discordId, plan, status, 0);
+                    console.log(`[MIGRAÇÃO] Usuário importado: ${u.username} (${plan})`);
+                } catch (err) {
+                    console.error(`[MIGRAÇÃO] Erro ao criar ${u.username}:`, err.message);
+                }
+            }
         }
     } catch (e) {
-        console.error('[MIGRAÇÃO] Erro:', e.message);
+        console.error('[MIGRAÇÃO] Erro geral na migração:', e.message);
     }
 }
 migrateFromJSON();
@@ -187,24 +234,6 @@ function autoSeedOwner() {
             const hash = bcrypt.hashSync('senha123', 10);
             userStmts.create.run('dono', hash, null, 'ultra', 'ativo', 1);
             console.log('[DB] Seeding: Usuário "dono" criado!');
-        }
-
-        // Seed user 'dogcuteoutra353' com o mesmo hash de senha local!
-        if (!userStmts.findByUsername.get('dogcuteoutra353')) {
-            userStmts.create.run('dogcuteoutra353', '$2b$10$3rYU3Ord52i1Koun0aALk.uCqfp1dxDXVureYtP0ehH6ZJTRk/7JW', '1443780891112636437', 'ultra', 'ativo', 1);
-            console.log('[DB] Seeding: Usuário "dogcuteoutra353" importado!');
-        }
-
-        // Seed user 'dogcuteoutra6833' (Username real gerado pelo bot local!)
-        if (!userStmts.findByUsername.get('dogcuteoutra6833')) {
-            userStmts.create.run('dogcuteoutra6833', '$2b$10$6gX5KNUe9lusakFZqEWYaOxsMZJUfDgEHec3.4kLMMGW24qEBZ1Z6', '1443780891112636437', 'ultra', 'ativo', 1);
-            console.log('[DB] Seeding: Usuário "dogcuteoutra6833" importado!');
-        }
-
-        // Seed user 'mel6691' com o hash atualizado do bot!
-        if (!userStmts.findByUsername.get('mel6691')) {
-            userStmts.create.run('mel6691', '$2b$10$xfkzBLSGQN.NIOxw7laPhe89.NWzBisryHhJHWA3TEs0Ag79Dxh0O', '1506346688028348517', 'ultra', 'ativo', 0);
-            console.log('[DB] Seeding: Usuário "mel6691" importado!');
         }
     } catch (e) {
         console.error('[DB] Erro no auto-seeding:', e.message);

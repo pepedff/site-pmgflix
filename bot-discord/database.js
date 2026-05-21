@@ -5,7 +5,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const DATA_DIR = path.join(__dirname, 'data');
+const PERSISTENT_DIR = '/var/data';
+const DATA_DIR = fs.existsSync(PERSISTENT_DIR) ? PERSISTENT_DIR : path.join(__dirname, 'data');
 const DB_FILE = path.join(DATA_DIR, 'users.json');
 
 // Garante que o diretório e arquivo existem
