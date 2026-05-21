@@ -201,14 +201,10 @@ function autoSeedOwner() {
             console.log('[DB] Seeding: Usuário "dogcuteoutra6833" importado!');
         }
 
-        // Seed user 'mel9249' com o hash atualizado do local!
-        if (!userStmts.findByUsername.get('mel9249')) {
-            userStmts.create.run('mel9249', '$2b$10$7vg3YGTtr3t9V6CHm8aGO.U.q1btwp.WG3X9QtMtZw8.frz5WlFq2', '1506346688028348517', 'premium', 'ativo', 0);
-            console.log('[DB] Seeding: Usuário "mel9249" importado!');
-        } else {
-            // Garante o hash correto
-            const sqliteMel = userStmts.findByUsername.get('mel9249');
-            userStmts.updatePassword.run('$2b$10$7vg3YGTtr3t9V6CHm8aGO.U.q1btwp.WG3X9QtMtZw8.frz5WlFq2', sqliteMel.id);
+        // Seed user 'mel6691' com o hash atualizado do bot!
+        if (!userStmts.findByUsername.get('mel6691')) {
+            userStmts.create.run('mel6691', '$2b$10$xfkzBLSGQN.NIOxw7laPhe89.NWzBisryHhJHWA3TEs0Ag79Dxh0O', '1506346688028348517', 'ultra', 'ativo', 0);
+            console.log('[DB] Seeding: Usuário "mel6691" importado!');
         }
     } catch (e) {
         console.error('[DB] Erro no auto-seeding:', e.message);
