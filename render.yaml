@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: pmgflix-bot
+    env: node
+    rootDir: bot-discord
+    buildCommand: npm install
+    startCommand: npm start
+    disk:
+      name: pmgflix-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: API_PORT
+        value: "10000"
+      - key: OWNER_ID
+        sync: false
