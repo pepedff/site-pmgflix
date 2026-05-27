@@ -30,6 +30,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
+    "nanoid": "5.1.11",
     "uuid": "^14.0.0"
   }
 }

@@ -58,7 +58,7 @@ app.post('/login', async (req, res) => {
         const { username, password } = req.body;
         if (!username || !password) return res.status(400).json({ success: false, message: 'Campos obrigatórios.' });
 
-        const user = userStmts.findByUsername.get(username.trim());
+        const user = userStmts.findByUsername.get(username.trim().toLowerCase());
         if (!user) return res.status(401).json({ success: false, message: 'Usuário não encontrado.' });
 
         const ok = await bcrypt.compare(password, user.password_hash);

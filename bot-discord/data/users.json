@@ -1,17 +1,6 @@
 {
   "users": [
     {
-      "username": "dogcuteoutra6833",
-      "passwordHash": "$2b$10$6gX5KNUe9lusakFZqEWYaOxsMZJUfDgEHec3.4kLMMGW24qEBZ1Z6",
-      "discordId": "1443780891112636437",
-      "discordTag": "nanane2s",
-      "plano": "💎 Ultra",
-      "planoKey": "ultra",
-      "status": "ativo",
-      "createdAt": "2026-05-19T17:51:28.550Z",
-      "approvedBy": "nanane2s"
-    },
-    {
       "username": "mel6691",
       "passwordHash": "$2b$10$xfkzBLSGQN.NIOxw7laPhe89.NWzBisryHhJHWA3TEs0Ag79Dxh0O",
       "discordId": "1506346688028348517",
@@ -20,6 +9,17 @@
       "planoKey": "ultra",
       "status": "ativo",
       "createdAt": "2026-05-21T21:09:38.948Z",
+      "approvedBy": "nanane2s"
+    },
+    {
+      "username": "dogcuteoutra4747",
+      "passwordHash": "$2b$10$RJg4eStP/.Ik07UUZO8zJecdf5ufwiUbuisckMKm6cSjb1/S4NxQS",
+      "discordId": "1443780891112636437",
+      "discordTag": "nanane2s",
+      "plano": "Ultra",
+      "planoKey": "ultra",
+      "status": "ativo",
+      "createdAt": "2026-05-27T17:52:06.037Z",
       "approvedBy": "nanane2s"
     }
   ]
