@@ -266,7 +266,8 @@ function migrateFromJSON() {
             } else {
                 // Se não existe, cria
                 try {
-                    userStmts.create.run(u.username, u.passwordHash, discordId, plan, status, 0);
+                    const isOwner = discordId === process.env.OWNER_ID ? 1 : 0;
+                    userStmts.create.run(u.username, u.passwordHash, discordId, plan, status, isOwner);
                     console.log(`[MIGRAÇÃO] Usuário importado: ${u.username} (${plan})`);
                 } catch (err) {
                     console.error(`[MIGRAÇÃO] Erro ao criar ${u.username}:`, err.message);
