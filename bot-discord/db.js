@@ -311,12 +311,13 @@ function autoSeedContents() {
 }
 autoSeedContents();
 
-// Garante que o OWNER_ID tem is_owner
+// Garante que o OWNER_ID tem is_owner (todas as contas dele)
 function setOwnerByDiscordId(discordId) {
-    const user = userStmts.findByDiscord.get(discordId);
-    if (user && !user.is_owner) {
-        userStmts.setOwner.run(user.id);
-        console.log(`[DB] Owner flag set for: ${user.username}`);
+    try {
+        db.prepare('UPDATE users SET is_owner = 1 WHERE discord_id = ?').run(discordId);
+        console.log(`[DB] Owner flag set for discord_id: ${discordId}`);
+    } catch (e) {
+        console.error('[DB] Erro ao setar owner:', e.message);
     }
 }
 
