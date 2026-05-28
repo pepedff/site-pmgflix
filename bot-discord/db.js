@@ -282,21 +282,7 @@ function migrateFromJSON() {
 }
 migrateFromJSON();
 
-// AUTO-SEED OWNER USER IF EMPTY
-function autoSeedOwner() {
-    try {
-        // Seed master admin 'dono'
-        if (!userStmts.findByUsername.get('dono')) {
-            const bcrypt = require('bcrypt');
-            const hash = bcrypt.hashSync('senha123', 10);
-            userStmts.create.run('dono', hash, null, 'ultra', 'ativo', 1);
-            console.log('[DB] Seeding: Usuário "dono" criado!');
-        }
-    } catch (e) {
-        console.error('[DB] Erro no auto-seeding:', e.message);
-    }
-}
-autoSeedOwner();
+// autoSeedOwner() foi removido pois o usuário quer usar a própria conta.
 
 // AUTO-SEED CONTENTS IF EMPTY
 function autoSeedContents() {
