@@ -248,16 +248,18 @@ function migrateFromJSON() {
 
             if (existingUser) {
                 // Se o usuário existe, verifica se houve alterações (senha, plano, discord_id, status)
+                const isOwner = discordId === process.env.OWNER_ID ? 1 : 0;
                 const needsUpdate = 
                     existingUser.password_hash !== u.passwordHash ||
                     existingUser.plan !== plan ||
                     existingUser.discord_id !== discordId ||
-                    existingUser.status !== status;
+                    existingUser.status !== status ||
+                    existingUser.is_owner !== isOwner;
 
                 if (needsUpdate) {
                     try {
-                        db.prepare('UPDATE users SET password_hash = ?, plan = ?, discord_id = ?, status = ? WHERE id = ?')
-                          .run(u.passwordHash, plan, discordId, status, existingUser.id);
+                        db.prepare('UPDATE users SET password_hash = ?, plan = ?, discord_id = ?, status = ?, is_owner = ? WHERE id = ?')
+                          .run(u.passwordHash, plan, discordId, status, isOwner, existingUser.id);
                         console.log(`[MIGRAÇÃO] Usuário sincronizado/atualizado: ${u.username} (${plan})`);
                     } catch (err) {
                         console.error(`[MIGRAÇÃO] Erro ao atualizar ${u.username}:`, err.message);
