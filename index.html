@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PMGFlix — Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=Bebas+Neue&display=swap"
         rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
-        * {
+        /* ===== RESET & VARIÁVEIS ===== */
+        *,
+        *::before,
+        *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -24,18 +26,21 @@
             --pink: #ec4899;
             --cyan: #06b6d4;
             --gold: #fbbf24;
+            --red: #ef4444;
             --bg: #050511;
+            --card-bg: linear-gradient(135deg, rgba(15, 10, 35, .92), rgba(10, 8, 30, .92));
+            --transition: all .3s cubic-bezier(.4, 0, .2, 1);
         }
 
         html,
         body {
             background: var(--bg);
-        }
-
-        body {
             font-family: 'Inter', sans-serif;
             color: #fff;
             min-height: 100vh;
+        }
+
+        body {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -49,7 +54,7 @@
             color: #fff;
         }
 
-        /* === BACKGROUND MESH === */
+        /* ===== BACKGROUND EFFECTS ===== */
         .mesh-bg {
             position: fixed;
             inset: 0;
@@ -60,8 +65,7 @@
 
         .mesh-bg::before,
         .mesh-bg::after,
-        .mesh-bg .blob-3,
-        .mesh-bg .blob-4 {
+        .blob {
             content: '';
             position: absolute;
             border-radius: 50%;
@@ -72,7 +76,7 @@
         .mesh-bg::before {
             width: 700px;
             height: 700px;
-            background: radial-gradient(circle, #8B5CF6, transparent 70%);
+            background: radial-gradient(circle, var(--primary), transparent 70%);
             top: -250px;
             left: -200px;
             animation: blobMove1 20s ease-in-out infinite;
@@ -81,26 +85,26 @@
         .mesh-bg::after {
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, #ec4899, transparent 70%);
+            background: radial-gradient(circle, var(--pink), transparent 70%);
             bottom: -200px;
             right: -150px;
             animation: blobMove2 24s ease-in-out infinite;
         }
 
-        .mesh-bg .blob-3 {
+        .blob-3 {
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, #06b6d4, transparent 70%);
+            background: radial-gradient(circle, var(--cyan), transparent 70%);
             top: 50%;
             left: 60%;
             opacity: .22;
             animation: blobMove3 26s ease-in-out infinite;
         }
 
-        .mesh-bg .blob-4 {
+        .blob-4 {
             width: 400px;
             height: 400px;
-            background: radial-gradient(circle, #fbbf24, transparent 70%);
+            background: radial-gradient(circle, var(--gold), transparent 70%);
             top: 20%;
             right: 20%;
             opacity: .12;
@@ -159,7 +163,7 @@
             }
         }
 
-        /* Grid texture */
+        /* ===== GRID OVERLAY ===== */
         .grid-overlay {
             position: fixed;
             inset: 0;
@@ -184,7 +188,7 @@
             }
         }
 
-        /* Noise */
+        /* ===== NOISE TEXTURE ===== */
         .noise {
             position: fixed;
             inset: 0;
@@ -195,7 +199,7 @@
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
 
-        /* Floating particles */
+        /* ===== FLOATING PARTICLES ===== */
         .particles {
             position: fixed;
             inset: 0;
@@ -213,20 +217,6 @@
             opacity: 0;
             box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
             animation: particleFloat 15s linear infinite;
-        }
-
-        .particle:nth-child(1) {
-            left: 8%;
-            animation-delay: 0s;
-            animation-duration: 18s;
-        }
-
-        .particle:nth-child(2) {
-            left: 18%;
-            animation-delay: 2s;
-            animation-duration: 22s;
-            background: var(--pink);
-            box-shadow: 0 0 10px var(--pink);
         }
 
         .particle:nth-child(3) {
@@ -306,7 +296,7 @@
             }
         }
 
-        /* Cursor glow */
+        /* ===== CURSOR GLOW ===== */
         .cursor-glow {
             position: fixed;
             width: 500px;
@@ -325,7 +315,7 @@
             opacity: 1;
         }
 
-        /* === LOGIN CARD === */
+        /* ===== LOGIN CARD CONTAINER ===== */
         .login-wrap {
             position: relative;
             z-index: 2;
@@ -334,7 +324,6 @@
             perspective: 1200px;
         }
 
-        /* Animated border glow */
         .login-wrap::before {
             content: '';
             position: absolute;
@@ -366,7 +355,7 @@
             position: relative;
             width: 100%;
             padding: 48px 44px;
-            background: linear-gradient(135deg, rgba(15, 10, 35, .92), rgba(10, 8, 30, .92));
+            background: var(--card-bg);
             border: 1px solid rgba(139, 92, 246, .25);
             border-radius: 26px;
             backdrop-filter: blur(28px) saturate(180%);
@@ -392,7 +381,6 @@
             }
         }
 
-        /* Shine effect on card */
         .login-card::after {
             content: '';
             position: absolute;
@@ -411,7 +399,7 @@
             opacity: 1;
         }
 
-        /* === LOGO === */
+        /* ===== LOGO ===== */
         .logo {
             text-align: center;
             margin-bottom: 36px;
@@ -538,7 +526,7 @@
             color: var(--primary);
         }
 
-        /* === FIELDS === */
+        /* ===== FORM FIELDS ===== */
         .field {
             margin-bottom: 18px;
             animation: fieldFade .6s ease backwards;
@@ -595,7 +583,7 @@
             color: #fff;
             font-size: 15px;
             font-family: inherit;
-            transition: all .3s cubic-bezier(.4, 0, .2, 1);
+            transition: var(--transition);
             outline: none;
             font-weight: 500;
         }
@@ -651,7 +639,7 @@
             background: rgba(139, 92, 246, .1);
         }
 
-        /* === BUTTON === */
+        /* ===== LOGIN BUTTON ===== */
         .btn-login {
             width: 100%;
             padding: 17px;
@@ -663,7 +651,7 @@
             font-weight: 700;
             font-family: inherit;
             cursor: pointer;
-            transition: all .3s cubic-bezier(.4, 0, .2, 1);
+            transition: var(--transition);
             margin-top: 8px;
             position: relative;
             overflow: hidden;
@@ -734,7 +722,7 @@
             transform: translateX(4px);
         }
 
-        /* Loading spinner inside button */
+        /* ===== SPINNER ===== */
         .spinner {
             display: inline-block;
             width: 18px;
@@ -751,7 +739,7 @@
             }
         }
 
-        /* === MSG === */
+        /* ===== MESSAGES ===== */
         .msg {
             margin-top: 18px;
             padding: 14px 18px;
@@ -812,7 +800,7 @@
             }
         }
 
-        /* === FOOTER TEXT === */
+        /* ===== FOOTER ===== */
         .footer-text {
             text-align: center;
             margin-top: 28px;
@@ -855,8 +843,8 @@
             width: 5px;
             height: 5px;
             border-radius: 50%;
-            background: var(--green, #22c55e);
-            box-shadow: 0 0 6px var(--green, #22c55e);
+            background: #22c55e;
+            box-shadow: 0 0 6px #22c55e;
             animation: livePulse 2s ease-in-out infinite;
         }
 
@@ -872,7 +860,7 @@
             }
         }
 
-        /* === USER PANEL === */
+        /* ===== USER PANEL ===== */
         .user-panel {
             display: none;
             text-align: center;
@@ -961,7 +949,7 @@
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            transition: all .3s;
+            transition: var(--transition);
             font-family: inherit;
         }
 
@@ -972,6 +960,96 @@
             transform: translateY(-2px);
         }
 
+        /* ===== OFFLINE NOTICE ===== */
+        .offline-notice {
+            text-align: center;
+        }
+
+        .offline-notice .logo-icon {
+            background: linear-gradient(135deg, var(--red), #b91c1c);
+            box-shadow: 0 12px 32px rgba(239, 68, 68, 0.4);
+        }
+
+        .offline-notice h1 {
+            background: linear-gradient(135deg, #fff 0%, #fca5a5 50%, var(--red) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 30px rgba(239, 68, 68, 0.35));
+            margin-top: 10px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            padding: 6px 16px;
+            border-radius: 99px;
+            color: #fca5a5;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 16px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background-color: var(--red);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--red);
+            animation: livePulse 2s ease-in-out infinite;
+        }
+
+        .offline-content {
+            margin: 24px 0;
+            padding: 22px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 18px;
+            text-align: left;
+            backdrop-filter: blur(12px);
+        }
+
+        .offline-content p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #f3f4f6;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .offline-content p:last-child {
+            margin-bottom: 0;
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .offline-footer {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        .offline-meta {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .login-card {
                 padding: 36px 28px;
@@ -983,31 +1061,39 @@
                 letter-spacing: 4px;
             }
 
-            .logo-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 30px;
-            }
+        }
 
-            .field input {
-                padding: 14px 14px 14px 44px;
-                font-size: 14px;
-            }
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 30px;
+        }
 
-            .input-icon {
-                left: 14px;
-            }
+        .field input {
+            padding: 14px 14px 14px 44px;
+            font-size: 14px;
+        }
+
+        .input-icon {
+            left: 14px;
+        }
+
+        .offline-meta {
+            font-size: 10px;
         }
     </style>
 </head>
 
 <body>
+    <!-- Background Effects -->
     <div class="mesh-bg">
         <div class="blob-3"></div>
         <div class="blob-4"></div>
     </div>
     <div class="grid-overlay"></div>
     <div class="noise"></div>
+
+    <!-- Floating Particles -->
     <div class="particles">
         <div class="particle"></div>
         <div class="particle"></div>
@@ -1020,54 +1106,86 @@
         <div class="particle"></div>
         <div class="particle"></div>
     </div>
+
+    <!-- Cursor Glow -->
     <div class="cursor-glow" id="cursorGlow"></div>
 
+    <!-- Login Card -->
     <div class="login-wrap">
         <div class="login-card" id="loginCard">
-            <!-- SITE OFFLINE / ENCERRADO -->
-            <div id="offlineNotice" style="text-align: center;">
-                <div class="logo" style="margin-bottom: 28px;">
-                    <div class="logo-icon" style="background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 12px 32px rgba(239, 68, 68, 0.4);">🚫</div>
-                    <h1 style="background: linear-gradient(135deg, #fff 0%, #fca5a5 50%, #ef4444 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 30px rgba(239, 68, 68, 0.35)); margin-top: 10px;">PMGFLIX</h1>
-                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); padding: 6px 16px; border-radius: 99px; color: #fca5a5; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-top: 16px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);">
-                        <span style="width: 6px; height: 6px; background-color: #ef4444; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #ef4444; animation: livePulse 2s ease-in-out infinite;"></span>
-                        Site Fora do Ar
-                    </div>
+            <!-- Offline Notice -->
+            <div id="offlineNotice" class="offline-notice">
+                <div class="logo">
+                    <div class="logo-icon">🚫</div>
+                    <h1>PMGFLIX</h1>
+                    <div class="status-badge">Site Fora do Ar</div>
                 </div>
 
-                <div style="margin: 24px 0; padding: 22px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(139, 92, 246, 0.15); border-radius: 18px; text-align: left; backdrop-filter: blur(12px);">
-                    <p style="font-size: 15px; line-height: 1.6; color: #f3f4f6; font-weight: 600; margin-bottom: 12px;">
-                        Lamentamos informar que a plataforma PMGFlix está temporariamente fora do ar.
-                    </p>
-                    <p style="font-size: 14px; line-height: 1.6; color: rgba(255, 255, 255, 0.65);">
-                        O projeto foi encerrado devido a desentendimentos e confusões internas na comunidade.
-                    </p>
+                <div class="offline-content">
+                    <p>Lamentamos informar que a plataforma PMGFlix está temporariamente fora do ar.</p>
+                    <p>O projeto foi encerrado devido a desentendimentos e confusões internas na comunidade.</p>
                 </div>
 
-                <p style="font-size: 13px; color: rgba(255, 255, 255, 0.4); line-height: 1.5; margin-bottom: 28px;">
+                <p class="offline-footer">
                     Agradecemos a todos que nos apoiaram durante a trajetória do site.
                 </p>
 
-                <div style="margin-top: 0; display: flex; justify-content: center; gap: 8px; color: rgba(255, 255, 255, 0.3); font-size: 11px; font-weight: 500; letter-spacing: 0.5px;">
+                <div class="offline-meta">
                     <span>Projeto Encerrado</span>
                     <span>·</span>
                     <span>PMGFlix © 2026</span>
                 </div>
             </div>
-        </div>
-    </div>
+
+            <!-- Login Form (Hidden) -->
+            <div id="loginForm" style="display: none;">
+                <div class="logo">
+                    <div class="logo-icon">🎬</div>
+                    <h1>PMGFLIX</h1>
+                    <p>Sua plataforma de streaming</p>
+                </div>
+
+                <div class="field">
+                    <label for="username">👤 Usuário</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="username" placeholder="Digite seu usuário" autocomplete="username" />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="password">🔑 Senha</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">🔑</span>
+                        <input type="password" id="password" placeholder="Digite sua senha"
+                            autocomplete="current-password" />
+                        <button type="button" class="password-toggle" id="togglePass"
+                            onclick="togglePass()">👁️</button>
+                    </div>
+                </div>
+
+                <button class="btn-login" id="btnLogin" onclick="doLogin()">
+                    <span id="btnText">Entrar</span>
+                    <span class="btn-arrow" id="btnArrow">→</span>
+                </button>
+
+                <div class="msg" id="msg"></div>
+            </div><!-- /loginForm -->
+
+        </div><!-- /login-card -->
+    </div><!-- /login-wrap -->
 
     <script>
         const API = window.location.origin;
 
-        // Se já está logado, vai direto pro site
+        // Site offline — redirecionamento desativado
         (function checkAuth() {
             try {
                 const raw = localStorage.getItem('pmgflix_user');
                 if (!raw) return;
                 const session = JSON.parse(raw);
                 if (session && session.username && localStorage.getItem('pmgflix_token')) {
-                    // window.location.replace('/PMGFlix.html'); // Desativado - Site indisponivel
+                    // window.location.replace('/PMGFlix.html'); // Desativado — Site indisponível
                 }
             } catch (e) {
                 localStorage.removeItem('pmgflix_user');
@@ -1090,259 +1208,92 @@
         async function doLogin() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
-            const msg = document.getElementById('msg');
-            const btn = document.getElementById('btnLogin');
-            const btnText = document.getElementById('btnText');
+            const msg      = document.getElementById('msg');
+            const btn      = document.getElementById('btnLogin');
+            const btnText  = document.getElementById('btnText');
             const btnArrow = document.getElementById('btnArrow');
 
-            msg.className = 'msg';
+            msg.className    = 'msg';
             msg.style.display = 'none';
 
             if (!username || !password) {
-                msg.className = 'msg error';
+                msg.className    = 'msg error';
                 msg.style.display = 'block';
-                msg.textContent = '⚠️ Preencha todos os campos.';
+                msg.textContent  = '⚠️ Preencha todos os campos.';
                 return;
             }
 
-            btn.disabled = true;
+            btn.disabled      = true;
             btnText.textContent = 'Entrando';
-            btnArrow.innerHTML = '<span class="spinner"></span>';
+            btnArrow.innerHTML  = '<span class="spinner"></span>';
 
             try {
-                const res = await fetch(`${API}/login`, {
-                    method: 'POST',
+                const res  = await fetch(`${API}/login`, {
+                    method:  'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password }),
+                    body:    JSON.stringify({ username, password }),
                 });
                 const data = await res.json();
 
                 if (data.success) {
-                    msg.className = 'msg success';
+                    msg.className    = 'msg success';
                     msg.style.display = 'block';
-                    msg.textContent = '✅ Bem-vindo! Redirecionando...';
+                    msg.textContent  = '✅ Bem-vindo! Redirecionando...';
 
-                    localStorage.setItem('pmgflix_user', JSON.stringify(data.user));
+                    localStorage.setItem('pmgflix_user',  JSON.stringify(data.user));
                     localStorage.setItem('pmgflix_token', data.token);
 
-                    setTimeout(() => {
-                        window.location.href = '/PMGFlix.html';
-                    }, 800);
+                    setTimeout(() => { window.location.href = '/PMGFlix.html'; }, 800);
                 } else {
-                    msg.className = 'msg error';
+                    msg.className    = 'msg error';
                     msg.style.display = 'block';
-                    msg.textContent = '❌ ' + data.message;
-                    btn.disabled = false;
+                    msg.textContent  = '❌ ' + data.message;
+                    btn.disabled      = false;
                     btnText.textContent = 'Entrar';
                     btnArrow.textContent = '→';
                 }
             } catch (err) {
-                msg.className = 'msg error';
+                msg.className    = 'msg error';
                 msg.style.display = 'block';
-                msg.textContent = '❌ Erro de conexão com o servidor.';
-                btn.disabled = false;
+                msg.textContent  = '❌ Erro de conexão com o servidor.';
+                btn.disabled      = false;
                 btnText.textContent = 'Entrar';
                 btnArrow.textContent = '→';
             }
         }
 
-        // Enter key
+        // Enter key shortcuts
         document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
         document.getElementById('username').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('password').focus(); });
 
-        // Cursor glow follow
+        // Cursor glow follow + 3D tilt on card
         const cursorGlow = document.getElementById('cursorGlow');
-        const loginCard = document.getElementById('loginCard');
+        const loginCard  = document.getElementById('loginCard');
+
         document.addEventListener('mousemove', (e) => {
             cursorGlow.style.left = e.clientX + 'px';
-            cursorGlow.style.top = e.clientY + 'px';
+            cursorGlow.style.top  = e.clientY + 'px';
 
-            // 3D tilt effect on card
             const rect = loginCard.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
+            const x    = e.clientX - rect.left - rect.width  / 2;
+            const y    = e.clientY - rect.top  - rect.height / 2;
             const rotX = (y / rect.height) * -6;
-            const rotY = (x / rect.width) * 6;
+            const rotY = (x / rect.width)  *  6;
             loginCard.style.transform = `perspective(1200px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
 
-            // Ripple buttons
             document.querySelectorAll('.btn-login').forEach(btn => {
-                const r = btn.getBoundingClientRect();
-                const bx = ((e.clientX - r.left) / r.width) * 100;
-                const by = ((e.clientY - r.top) / r.height) * 100;
+                const r  = btn.getBoundingClientRect();
+                const bx = ((e.clientX - r.left) / r.width)  * 100;
+                const by = ((e.clientY - r.top)  / r.height) * 100;
                 btn.style.setProperty('--mx', bx + '%');
                 btn.style.setProperty('--my', by + '%');
             });
         });
 
-        // Reset tilt when mouse leaves
         document.addEventListener('mouseleave', () => {
             loginCard.style.transform = 'perspective(1200px) rotateX(0) rotateY(0)';
         });
-
-        // Auto-focus username on load
-        setTimeout(() => document.getElementById('username').focus(), 600);
     </script>
 
-    <!-- ========================================== -->
-    <!-- ⚠️ TROLL AVISO DE ENCERRAMENTO (Troll do Pedrinho) -->
-    <!-- ========================================== -->
-    <style>
-        .troll-banner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: linear-gradient(90deg, #dc2626, #7c3aed);
-            color: #ffffff;
-            text-align: center;
-            padding: 10px 24px;
-            font-size: 13px;
-            font-weight: 600;
-            z-index: 100000;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-family: 'Inter', sans-serif;
-            animation: slideDown 0.5s ease-out;
-        }
-        .troll-banner a {
-            color: #f59e0b;
-            text-decoration: underline;
-            cursor: pointer;
-            font-weight: 700;
-            margin-left: 5px;
-            transition: color 0.2s;
-        }
-        .troll-banner a:hover {
-            color: #ffffff;
-        }
-        .troll-modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(5, 5, 17, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 100001;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .troll-modal-overlay.active {
-            display: flex;
-            opacity: 1;
-        }
-        .troll-modal {
-            background: linear-gradient(135deg, #150a25, #0a0515);
-            border: 2px solid #ef4444;
-            border-radius: 20px;
-            padding: 35px;
-            max-width: 520px;
-            width: 100%;
-            box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25), 0 0 40px rgba(109, 40, 217, 0.2);
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            position: relative;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-        .troll-modal-overlay.active .troll-modal {
-            transform: scale(1);
-        }
-        .troll-modal-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: #9ca3af;
-            font-size: 24px;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .troll-modal-close:hover {
-            color: #ffffff;
-        }
-        .troll-modal-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: #ef4444;
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            font-family: 'Space Grotesk', sans-serif;
-            letter-spacing: -0.5px;
-            text-transform: uppercase;
-        }
-        .troll-modal-body p {
-            font-size: 14.5px;
-            line-height: 1.6;
-            color: #d1d5db;
-            margin-bottom: 15px;
-        }
-        .troll-modal-body strong {
-            color: #ffffff;
-        }
-        .troll-modal-footer {
-            margin-top: 25px;
-            display: flex;
-            justify-content: center;
-        }
-        .troll-btn-refund {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .troll-btn-refund:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 20px rgba(239, 68, 68, 0.5);
-        }
-        .troll-reveal-card {
-            display: none;
-            text-align: center;
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .troll-reveal-card h2 {
-            font-size: 36px;
-            margin-bottom: 15px;
-            color: #fbbf24;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        .troll-reveal-card p {
-            font-size: 17px;
-            line-height: 1.6;
-            color: #ffffff;
-            margin-bottom: 20px;
-        }
-        @keyframes slideDown {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
-        }
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        /* Ajustar o corpo da página para dar espaço ao banner */
-        body.has-troll-banner {
-            margin-top: 40px !important;
-        }
-        body.has-troll-banner .header {
-            top: 40px !important;
-        }
-    </style>
-
 </body>
-
 </html>
