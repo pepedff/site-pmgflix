@@ -1863,6 +1863,7 @@
     </div>
 
     <script>
+        window.location.replace('/index.html');
         const API = localStorage.getItem('pmgflix_api_url') || window.location.origin;
         const TOKEN = () => localStorage.getItem('pmgflix_token');
         function apiFetch(url, opts = {}) {

@@ -1514,18 +1514,9 @@
 <body class="intro-playing">
 
     <script>
-        // AUTH GUARD
+        // AUTH GUARD - SITE OFFLINE
         (function () {
-            try {
-                const raw = localStorage.getItem('pmgflix_user');
-                if (!raw) throw 'no user';
-                const user = JSON.parse(raw);
-                if (!user || !user.username) throw 'invalid';
-            } catch (e) {
-                localStorage.removeItem('pmgflix_user');
-                localStorage.removeItem('pmgflix_token');
-                window.location.replace('/index.html');
-            }
+            window.location.replace('/index.html');
         })();
     </script>
 
