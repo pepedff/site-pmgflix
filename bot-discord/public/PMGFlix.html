@@ -1563,6 +1563,9 @@
             <div class="header-right">
                 <div class="icon-btn">🔍</div>
                 <div class="icon-btn">🔔<span class="dot"></span></div>
+                <a id="adminBtn" href="admin.html"
+                    style="display:none;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#fff;background:linear-gradient(135deg,#8B5CF6,#6D28D9);padding:7px 15px;border-radius:999px;text-decoration:none;box-shadow:0 4px 16px rgba(139,92,246,.4);white-space:nowrap;">⚙️
+                    Painel Admin</a>
                 <div id="userPlano"
                     style="font-size:11px;font-weight:700;background:linear-gradient(135deg,#A78BFA,#6D28D9);padding:5px 12px;border-radius:999px;letter-spacing:.8px;box-shadow:0 4px 16px rgba(139,92,246,.4);">
                 </div>
@@ -1939,25 +1942,53 @@
         }
         const PLAN_NAMES = { gratis: 'Grátis', premium: '⭐ Premium', ultra: '💎 Ultra' };
 
-        (function loadUser() {
+        function applyUser(user) {
+            if (!user || !user.username) return;
             try {
-                const user = JSON.parse(localStorage.getItem('pmgflix_user'));
-                if (user) {
-                    document.getElementById('profileIcon').childNodes[0].textContent = user.username[0].toUpperCase();
-                    document.getElementById('menuUsername').textContent = user.username;
-                    document.getElementById('menuPlano').textContent = PLAN_NAMES[user.plan] || user.plan;
-                    document.getElementById('userPlano').textContent = PLAN_NAMES[user.plan] || user.plan;
-                    if (user.is_owner) {
+                document.getElementById('profileIcon').childNodes[0].textContent = user.username[0].toUpperCase();
+                document.getElementById('menuUsername').textContent = user.username;
+                document.getElementById('menuPlano').textContent = PLAN_NAMES[user.plan] || user.plan;
+                document.getElementById('userPlano').textContent = PLAN_NAMES[user.plan] || user.plan;
+
+                const adminBtn = document.getElementById('adminBtn');
+                if (user.is_owner) {
+                    if (adminBtn) adminBtn.style.display = 'flex';
+                    if (!document.getElementById('menuAdminLink')) {
                         const adminLink = document.createElement('div');
+                        adminLink.id = 'menuAdminLink';
                         adminLink.innerHTML = '⚙️ Painel Admin';
                         adminLink.style.cssText = 'padding:12px 18px;font-size:13px;color:#A78BFA;cursor:pointer;transition:background .2s;font-weight:500;';
                         adminLink.onmouseover = () => adminLink.style.background = 'rgba(139,92,246,.08)';
                         adminLink.onmouseout = () => adminLink.style.background = 'transparent';
                         adminLink.onclick = () => window.location.href = 'admin.html';
-                        document.getElementById('profileMenu').insertBefore(adminLink, document.getElementById('profileMenu').lastElementChild);
+                        const menu = document.getElementById('profileMenu');
+                        menu.insertBefore(adminLink, menu.lastElementChild);
                     }
+                } else if (adminBtn) {
+                    adminBtn.style.display = 'none';
                 }
             } catch (e) { }
+        }
+
+        (function loadUser() {
+            let user = null;
+            try { user = JSON.parse(localStorage.getItem('pmgflix_user')); } catch (e) { }
+            applyUser(user);
+
+            // Atualiza dados do servidor (corrige is_owner/plano de um cache antigo)
+            const token = localStorage.getItem('pmgflix_token');
+            if (token) {
+                const API = (localStorage.getItem('pmgflix_api_url') || window.location.origin).replace(/\/$/, '');
+                fetch(API + '/me', { headers: { Authorization: 'Bearer ' + token } })
+                    .then(r => r.ok ? r.json() : null)
+                    .then(fresh => {
+                        if (fresh && fresh.username) {
+                            localStorage.setItem('pmgflix_user', JSON.stringify(fresh));
+                            applyUser(fresh);
+                        }
+                    })
+                    .catch(() => { });
+            }
         })();
 
         function toggleMenu() {

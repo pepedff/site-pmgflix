@@ -1244,6 +1244,7 @@
 
             // Se o cache não diz que é dono mas há token, confirma no servidor.
             // Isso corrige o caso de ter logado antes da flag de dono existir.
+            let sessionExpired = false;
             if (!u.is_owner && token) {
                 try {
                     const xhr = new XMLHttpRequest();
@@ -1253,19 +1254,23 @@
                     if (xhr.status === 200) {
                         u = JSON.parse(xhr.responseText);
                         localStorage.setItem('pmgflix_user', JSON.stringify(u));
+                    } else if (xhr.status === 401 || xhr.status === 403) {
+                        sessionExpired = true;
                     }
                 } catch (e) { }
             }
 
             if (!u.is_owner) {
-                const quem = (u && u.username)
-                    ? ('Você está logado como <b>' + u.username + '</b>, que não é dono.')
-                    : 'Você não está logado.';
+                const semSessao = !token || sessionExpired;
+                const titulo = semSessao ? 'Sessão expirada' : 'Acesso restrito ao dono';
+                const quem = semSessao
+                    ? 'Sua sessão expirou ou você não está logado. Faça login novamente com a conta de dono.'
+                    : ('Você está logado como <b>' + (u.username || '?') + '</b>, que não é dono. Entre com a conta de dono para acessar o painel.');
                 document.body.innerHTML =
                     '<div style="display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;height:100vh;text-align:center;font-family:Inter,sans-serif;color:#e5e7eb;padding:24px">'
-                    + '<div style="font-size:44px">🚫</div>'
-                    + '<div style="font-size:20px;font-weight:800">Acesso restrito ao dono</div>'
-                    + '<div style="font-size:14px;color:#9ca3af;max-width:440px;line-height:1.5">' + quem + ' Entre com a conta de dono para acessar o painel.</div>'
+                    + '<div style="font-size:44px">' + (semSessao ? '🔒' : '🚫') + '</div>'
+                    + '<div style="font-size:20px;font-weight:800">' + titulo + '</div>'
+                    + '<div style="font-size:14px;color:#9ca3af;max-width:440px;line-height:1.5">' + quem + '</div>'
                     + '<a href="/index.html" style="margin-top:6px;background:#8B5CF6;color:#fff;padding:11px 24px;border-radius:10px;text-decoration:none;font-weight:700">Ir para o login</a>'
                     + '</div>';
                 throw new Error('denied');
