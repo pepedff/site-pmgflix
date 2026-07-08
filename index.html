@@ -1058,7 +1058,7 @@
 
                 <div class="msg" id="msg"></div>
 
-                <p class="footer-text">Não tem conta? Use <strong>!pagar</strong> no Discord</p>
+                <p class="footer-text">Não tem conta? <a href="assinar.html" style="color:var(--primary-light);text-decoration:underline;font-weight:700">Assine agora via PIX</a></p>
 
                 <div class="footer-meta">
                     <span>Servidor online</span>
@@ -1085,7 +1085,7 @@
     </div>
 
     <script>
-        const API = window.location.origin;
+        const API = (localStorage.getItem('pmgflix_api_url') || window.location.origin).replace(/\/$/, '');
 
         // Se já está logado, vai direto pro site
         (function checkAuth() {

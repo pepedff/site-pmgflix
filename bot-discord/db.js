@@ -76,6 +76,17 @@ CREATE TABLE IF NOT EXISTS watch_progress (
     FOREIGN KEY (content_id) REFERENCES contents(id) ON DELETE CASCADE,
     UNIQUE(user_id, content_id, episode_id)
 );
+
+CREATE TABLE IF NOT EXISTS pix_orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    email TEXT,
+    plan TEXT NOT NULL DEFAULT 'premium' CHECK(plan IN ('premium','ultra')),
+    status TEXT DEFAULT 'pendente' CHECK(status IN ('pendente','aprovado','rejeitado')),
+    username TEXT,
+    password_raw TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+);
 `);
 
 // ============================================================
@@ -205,6 +216,18 @@ const watchStmts = {
 };
 
 // ============================================================
+// PIX ORDERS
+// ============================================================
+const pixOrderStmts = {
+    create: db.prepare('INSERT INTO pix_orders (nome, email, plan) VALUES (?,?,?)'),
+    all: db.prepare('SELECT * FROM pix_orders ORDER BY created_at DESC'),
+    pending: db.prepare("SELECT * FROM pix_orders WHERE status = 'pendente' ORDER BY created_at DESC"),
+    byId: db.prepare('SELECT * FROM pix_orders WHERE id = ?'),
+    approve: db.prepare('UPDATE pix_orders SET status = ?, username = ?, password_raw = ? WHERE id = ?'),
+    reject: db.prepare("UPDATE pix_orders SET status = 'rejeitado' WHERE id = ?"),
+};
+
+// ============================================================
 // MIGRAÇÃO — Importa e sincroniza usuários do JSON existente
 // ============================================================
 function migrateFromJSON() {
@@ -249,7 +272,7 @@ function migrateFromJSON() {
             if (existingUser) {
                 // Se o usuário existe, verifica se houve alterações (senha, plano, discord_id, status)
                 const isOwner = discordId === process.env.OWNER_ID ? 1 : 0;
-                const needsUpdate = 
+                const needsUpdate =
                     existingUser.password_hash !== u.passwordHash ||
                     existingUser.plan !== plan ||
                     existingUser.discord_id !== discordId ||
@@ -259,7 +282,7 @@ function migrateFromJSON() {
                 if (needsUpdate) {
                     try {
                         db.prepare('UPDATE users SET password_hash = ?, plan = ?, discord_id = ?, status = ?, is_owner = ? WHERE id = ?')
-                          .run(u.passwordHash, plan, discordId, status, isOwner, existingUser.id);
+                            .run(u.passwordHash, plan, discordId, status, isOwner, existingUser.id);
                         console.log(`[MIGRAÇÃO] Usuário sincronizado/atualizado: ${u.username} (${plan})`);
                     } catch (err) {
                         console.error(`[MIGRAÇÃO] Erro ao atualizar ${u.username}:`, err.message);
@@ -322,6 +345,6 @@ function setOwnerByDiscordId(discordId) {
 }
 
 module.exports = {
-    db, userStmts, contentStmts, seasonStmts, episodeStmts, watchStmts,
+    db, userStmts, contentStmts, seasonStmts, episodeStmts, watchStmts, pixOrderStmts,
     setOwnerByDiscordId,
 };

@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMGFlix — Assinar via PIX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8B5CF6;
+            --primary-light: #A78BFA;
+            --primary-dark: #6D28D9;
+            --accent: #c4b5fd;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+            --gold: #fbbf24;
+            --green: #22c55e;
+            --bg: #050511;
+        }
+
+        html,
+        body {
+            background: var(--bg);
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        ::selection {
+            background: rgba(139, 92, 246, .4);
+            color: #fff;
+        }
+
+        /* === BACKGROUND === */
+        .mesh-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .mesh-bg::before,
+        .mesh-bg::after,
+        .mesh-bg .blob-3 {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: .3;
+        }
+
+        .mesh-bg::before {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, #8B5CF6, transparent 70%);
+            top: -250px;
+            left: -200px;
+            animation: blobMove1 20s ease-in-out infinite;
+        }
+
+        .mesh-bg::after {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #ec4899, transparent 70%);
+            bottom: -200px;
+            right: -150px;
+            animation: blobMove2 24s ease-in-out infinite;
+        }
+
+        .mesh-bg .blob-3 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #06b6d4, transparent 70%);
+            top: 50%;
+            left: 60%;
+            opacity: .2;
+            animation: blobMove3 26s ease-in-out infinite;
+        }
+
+        @keyframes blobMove1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(120px, 100px) scale(1.2);
+            }
+
+            66% {
+                transform: translate(-60px, 140px) scale(.9);
+            }
+        }
+
+        @keyframes blobMove2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(-140px, -100px) scale(1.15);
+            }
+        }
+
+        @keyframes blobMove3 {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-30%, -70%) scale(1.3);
+            }
+        }
+
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(139, 92, 246, .04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139, 92, 246, .04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            opacity: .03;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* === CONTAINER === */
+        .page-wrap {
+            position: relative;
+            z-index: 2;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        /* === BACK BUTTON === */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, .6);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, .08);
+            background: rgba(255, 255, 255, .03);
+            backdrop-filter: blur(12px);
+            transition: all .3s;
+            margin-bottom: 40px;
+        }
+
+        .back-link:hover {
+            background: rgba(139, 92, 246, .15);
+            border-color: rgba(139, 92, 246, .4);
+            color: #fff;
+            transform: translateX(-4px);
+        }
+
+        /* === HEADER === */
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .page-header .logo-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 18px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: 0 12px 32px rgba(139, 92, 246, .5), inset 0 1px 0 rgba(255, 255, 255, .3);
+        }
+
+        .page-header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 52px;
+            letter-spacing: 6px;
+            background: linear-gradient(135deg, #fff, var(--accent), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .page-header p {
+            color: rgba(255, 255, 255, .55);
+            font-size: 16px;
+            font-weight: 500;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* === PLAN CARDS === */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+
+        .plan-card {
+            background: rgba(255, 255, 255, .025);
+            border: 2px solid rgba(139, 92, 246, .2);
+            border-radius: 24px;
+            padding: 36px 32px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all .4s cubic-bezier(.4, 0, .2, 1);
+            backdrop-filter: blur(12px);
+        }
+
+        .plan-card::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(139, 92, 246, .2) 0%, transparent 60%);
+            border-radius: 50%;
+            transition: all .5s;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(139, 92, 246, .5);
+            box-shadow: 0 20px 50px rgba(139, 92, 246, .25);
+        }
+
+        .plan-card.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, .2), 0 20px 50px rgba(139, 92, 246, .3);
+        }
+
+        .plan-card.ultra-card::before {
+            background: radial-gradient(circle, rgba(236, 72, 153, .2) 0%, transparent 60%);
+        }
+
+        .plan-card.ultra-card.selected {
+            border-color: var(--pink);
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, .2), 0 20px 50px rgba(236, 72, 153, .25);
+        }
+
+        .plan-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 24px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .plan-card:not(.ultra-card) .plan-badge {
+            background: linear-gradient(135deg, rgba(139, 92, 246, .25), rgba(109, 40, 217, .15));
+            color: var(--primary-light);
+            border: 1px solid rgba(139, 92, 246, .4);
+        }
+
+        .ultra-card .plan-badge {
+            background: linear-gradient(135deg, rgba(236, 72, 153, .25), rgba(109, 40, 217, .15));
+            color: var(--pink);
+            border: 1px solid rgba(236, 72, 153, .4);
+        }
+
+        .plan-price {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #fff, var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .plan-price span {
+            font-size: 18px;
+            -webkit-text-fill-color: rgba(255, 255, 255, .5);
+        }
+
+        .plan-period {
+            color: rgba(255, 255, 255, .45);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        .plan-features {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .plan-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, .8);
+        }
+
+        .plan-features li::before {
+            content: '✓';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(34, 197, 94, .15);
+            color: #4ade80;
+            font-size: 11px;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+
+        .select-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, .15);
+            transition: all .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .plan-card.selected .select-indicator {
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+
+        .plan-card.selected .select-indicator::after {
+            content: '✓';
+            color: #fff;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .ultra-card.selected .select-indicator {
+            border-color: var(--pink);
+            background: var(--pink);
+        }
+
+        /* === PIX SECTION === */
+        .pix-section {
+            background: rgba(255, 255, 255, .025);
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: 24px;
+            padding: 36px 32px;
+            margin-bottom: 36px;
+            backdrop-filter: blur(12px);
+        }
+
+        .pix-section h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pix-section h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(180deg, var(--green), var(--cyan));
+            border-radius: 3px;
+            box-shadow: 0 0 12px rgba(34, 197, 94, .5);
+        }
+
+        .pix-section .subtitle {
+            color: rgba(255, 255, 255, .5);
+            font-size: 14px;
+            margin-bottom: 26px;
+            margin-left: 16px;
+        }
+
+        .pix-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(34, 197, 94, .06);
+            border: 1px solid rgba(34, 197, 94, .2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .pix-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, .25), rgba(6, 182, 212, .15));
+            border: 1px solid rgba(34, 197, 94, .35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .pix-details {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .pix-details .label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, .5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .pix-key {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, .3);
+            border: 1px solid rgba(34, 197, 94, .25);
+            border-radius: 12px;
+            padding: 14px 18px;
+        }
+
+        .pix-key code {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 15px;
+            color: #4ade80;
+            font-weight: 600;
+            flex: 1;
+            word-break: break-all;
+        }
+
+        .pix-key button {
+            background: rgba(34, 197, 94, .2);
+            border: 1px solid rgba(34, 197, 94, .4);
+            color: #4ade80;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .3s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .pix-key button:hover {
+            background: rgba(34, 197, 94, .3);
+            transform: translateY(-1px);
+        }
+
+        .pix-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .pix-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 18px;
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: 14px;
+        }
+
+        .pix-step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .pix-step-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, .7);
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .pix-step-text strong {
+            color: #fff;
+        }
+
+        /* === FORM === */
+        .order-form {
+            background: rgba(255, 255, 255, .025);
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: 24px;
+            padding: 36px 32px;
+            margin-bottom: 36px;
+            backdrop-filter: blur(12px);
+        }
+
+        .order-form h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .order-form h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(180deg, var(--primary), var(--pink));
+            border-radius: 3px;
+            box-shadow: 0 0 12px rgba(139, 92, 246, .5);
+        }
+
+        .order-form .subtitle {
+            color: rgba(255, 255, 255, .5);
+            font-size: 14px;
+            margin-bottom: 26px;
+            margin-left: 16px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-full {
+            grid-column: 1/-1;
+        }
+
+        .field {
+            margin-bottom: 0;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, .55);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            padding: 15px 18px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(139, 92, 246, .2);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: all .3s cubic-bezier(.4, 0, .2, 1);
+            font-weight: 500;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, .08);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, .15), 0 0 30px rgba(139, 92, 246, .2);
+        }
+
+        .field input::placeholder {
+            color: rgba(255, 255, 255, .25);
+        }
+
+        .field select {
+            cursor: pointer;
+        }
+
+        .field select option {
+            background: #1a1230;
+            color: #fff;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .3s cubic-bezier(.4, 0, .2, 1);
+            margin-top: 8px;
+            box-shadow: 0 10px 28px rgba(139, 92, 246, .45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 40px rgba(139, 92, 246, .65);
+        }
+
+        .btn-submit:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255, 255, 255, .3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* === MSG === */
+        .msg {
+            margin-top: 18px;
+            padding: 16px 20px;
+            border-radius: 14px;
+            font-size: 14px;
+            display: none;
+            text-align: center;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            border: 1px solid;
+        }
+
+        .msg.error {
+            display: block;
+            background: rgba(239, 68, 68, .12);
+            border-color: rgba(239, 68, 68, .4);
+            color: #fca5a5;
+            box-shadow: 0 8px 24px rgba(239, 68, 68, .15);
+            animation: msgIn .4s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        .msg.success {
+            display: block;
+            background: rgba(34, 197, 94, .12);
+            border-color: rgba(34, 197, 94, .4);
+            color: #86efac;
+            box-shadow: 0 8px 24px rgba(34, 197, 94, .2);
+            animation: msgIn .4s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        @keyframes msgIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px) scale(.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* === FOOTER === */
+        .page-footer {
+            text-align: center;
+            color: rgba(255, 255, 255, .3);
+            font-size: 12px;
+            font-weight: 500;
+            padding-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header h1 {
+                font-size: 38px;
+            }
+
+            .plan-price {
+                font-size: 36px;
+            }
+
+            .pix-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mesh-bg">
+        <div class="blob-3"></div>
+    </div>
+    <div class="grid-overlay"></div>
+    <div class="noise"></div>
+
+    <div class="page-wrap">
+        <a href="index.html" class="back-link">← Voltar ao Login</a>
+
+        <div class="page-header">
+            <div class="logo-icon">🎬</div>
+            <h1>PMGFLIX</h1>
+            <p>Escolha seu plano, pague via PIX e receba seus dados de acesso em instantes!</p>
+        </div>
+
+        <!-- PLAN CARDS -->
+        <div class="plans-grid">
+            <div class="plan-card selected" onclick="selectPlan('premium', this)" id="card-premium">
+                <div class="select-indicator"></div>
+                <div class="plan-badge">💎 Premium</div>
+                <div class="plan-price">R$9<span>,90/mês</span></div>
+                <div class="plan-period">Cobrança mensal</div>
+                <ul class="plan-features">
+                    <li>Filmes e séries ilimitados</li>
+                    <li>Qualidade Full HD</li>
+                    <li>Sem limite de filmes</li>
+                    <li>Legendas em português</li>
+                    <li>Novos lançamentos semanais</li>
+                </ul>
+            </div>
+
+            <div class="plan-card ultra-card" onclick="selectPlan('ultra', this)" id="card-ultra">
+                <div class="select-indicator"></div>
+                <div class="plan-badge">👑 Ultra</div>
+                <div class="plan-price">R$19<span>,90/mês</span></div>
+                <div class="plan-period">Cobrança mensal</div>
+                <ul class="plan-features">
+                    <li>Tudo do Premium</li>
+                    <li>Qualidade 4K Ultra HD</li>
+                    <li>Acesso antecipado a lançamentos</li>
+                    <li>Conteúdo exclusivo Ultra</li>
+                    <li>Suporte prioritário</li>
+                    <li>Badge exclusivo no perfil</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PIX INFO -->
+        <div class="pix-section">
+            <h2>Pagamento via PIX</h2>
+            <p class="subtitle">Copie a chave PIX abaixo e faça o pagamento pelo app do seu banco</p>
+
+            <div class="pix-info">
+                <div class="pix-icon">💠</div>
+                <div class="pix-details">
+                    <div class="label">Chave PIX (E-mail)</div>
+                    <div class="pix-key">
+                        <code id="pixKey">pmgflix@email.com</code>
+                        <button onclick="copyPix()">📋 Copiar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pix-steps">
+                <div class="pix-step">
+                    <div class="pix-step-num">1</div>
+                    <div class="pix-step-text"><strong>Escolha o plano</strong> acima e veja o valor</div>
+                </div>
+                <div class="pix-step">
+                    <div class="pix-step-num">2</div>
+                    <div class="pix-step-text"><strong>Faça o PIX</strong> para a chave acima com o valor do plano</div>
+                </div>
+                <div class="pix-step">
+                    <div class="pix-step-num">3</div>
+                    <div class="pix-step-text"><strong>Preencha o formulário</strong> abaixo com seus dados</div>
+                </div>
+                <div class="pix-step">
+                    <div class="pix-step-num">4</div>
+                    <div class="pix-step-text"><strong>Aguarde a aprovação</strong> — você receberá seus dados de acesso
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ORDER FORM -->
+        <div class="order-form">
+            <h2>Seus Dados</h2>
+            <p class="subtitle">Preencha após realizar o pagamento PIX</p>
+
+            <form id="orderForm" onsubmit="return submitOrder(event)">
+                <div class="form-grid">
+                    <div class="field">
+                        <label>👤 Seu Nome</label>
+                        <input type="text" id="f_nome" placeholder="Como quer ser chamado" required>
+                    </div>
+                    <div class="field">
+                        <label>📧 E-mail (opcional)</label>
+                        <input type="email" id="f_email" placeholder="Para receber os dados de acesso">
+                    </div>
+                    <div class="field form-full">
+                        <label>💎 Plano Escolhido</label>
+                        <select id="f_plan">
+                            <option value="premium">💎 Premium — R$9,90/mês</option>
+                            <option value="ultra">👑 Ultra — R$19,90/mês</option>
+                        </select>
+                    </div>
+                    <div class="form-full">
+                        <button type="submit" class="btn-submit" id="btnSubmit">
+                            <span id="btnText">🚀 Confirmar Pagamento</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="msg" id="msg"></div>
+            </form>
+        </div>
+
+        <div class="page-footer">PMGFlix © 2026 — Todos os direitos reservados</div>
+    </div>
+
+    <script>
+        const API = (localStorage.getItem('pmgflix_api_url') || window.location.origin).replace(/\/$/, '');
+        let selectedPlan = 'premium';
+
+        function selectPlan(plan, el) {
+            selectedPlan = plan;
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('f_plan').value = plan;
+        }
+
+        // Sync select with cards
+        document.getElementById('f_plan').addEventListener('change', function () {
+            selectedPlan = this.value;
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('card-' + this.value).classList.add('selected');
+        });
+
+        function copyPix() {
+            const key = document.getElementById('pixKey').textContent;
+            navigator.clipboard.writeText(key).then(() => {
+                const btn = event.target;
+                btn.textContent = '✅ Copiado!';
+                setTimeout(() => btn.textContent = '📋 Copiar', 2000);
+            });
+        }
+
+        async function submitOrder(e) {
+            e.preventDefault();
+            const nome = document.getElementById('f_nome').value.trim();
+            const email = document.getElementById('f_email').value.trim();
+            const plan = document.getElementById('f_plan').value;
+            const msg = document.getElementById('msg');
+            const btn = document.getElementById('btnSubmit');
+            const btnText = document.getElementById('btnText');
+
+            msg.className = 'msg';
+            msg.style.display = 'none';
+
+            if (!nome) {
+                msg.className = 'msg error';
+                msg.style.display = 'block';
+                msg.textContent = '⚠️ Preencha seu nome.';
+                return false;
+            }
+
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span> Enviando...';
+
+            try {
+                const res = await fetch(`${API}/pix/order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, email, plan }),
+                });
+                const data = await res.json();
+
+                if (data.id) {
+                    msg.className = 'msg success';
+                    msg.style.display = 'block';
+                    msg.innerHTML = '✅ Pedido #' + data.id + ' enviado com sucesso!<br>Aguarde a aprovação do administrador. Seus dados de acesso serão gerados automaticamente.';
+                    document.getElementById('orderForm').reset();
+                    selectedPlan = 'premium';
+                    document.getElementById('f_plan').value = 'premium';
+                    document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+                    document.getElementById('card-premium').classList.add('selected');
+                } else {
+                    msg.className = 'msg error';
+                    msg.style.display = 'block';
+                    msg.textContent = '❌ ' + (data.error || data.message || 'Erro ao enviar pedido.');
+                }
+            } catch (err) {
+                msg.className = 'msg error';
+                msg.style.display = 'block';
+                msg.textContent = '❌ Erro de conexão com o servidor.';
+            }
+
+            btn.disabled = false;
+            btnText.textContent = '🚀 Confirmar Pagamento';
+            return false;
+        }
+    </script>
+</body>
+
+</html>

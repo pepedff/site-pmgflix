@@ -8,8 +8,9 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const bcrypt = require('bcrypt');
-const { userStmts, contentStmts, seasonStmts, episodeStmts, watchStmts, setOwnerByDiscordId } = require('./db');
+const { userStmts, contentStmts, seasonStmts, episodeStmts, watchStmts, pixOrderStmts, setOwnerByDiscordId } = require('./db');
 const { generateToken, requireAuth, requireOwner, canAccess } = require('./auth');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -193,7 +194,7 @@ app.post('/admin/content', requireOwner, upload.fields([
     const sub = req.files?.subtitle?.[0] ? `/uploads/subtitles/${req.files.subtitle[0].filename}` : (subtitle_url || null);
 
     const isFeatured = (featured === 'true' || featured === '1' || featured === 1 || featured === 'on') ? 1 : 0;
-    
+
     // If setting this as featured, unfeature all others
     if (isFeatured) {
         contentStmts.unfeatureAll.run();
@@ -267,6 +268,69 @@ app.get('/admin/contents', requireOwner, (req, res) => {
 app.get('/admin/users', requireOwner, (req, res) => {
     const users = userStmts.all.all();
     res.json(users);
+});
+
+// ════════════════════════════════════════════════════════
+// 💳 PIX ORDERS ROUTES
+// ════════════════════════════════════════════════════════
+
+// Criar pedido PIX (público)
+app.post('/pix/order', (req, res) => {
+    try {
+        const { nome, email, plan } = req.body;
+        if (!nome || !plan) return res.status(400).json({ error: 'Nome e plano são obrigatórios.' });
+        if (!['premium', 'ultra'].includes(plan)) return res.status(400).json({ error: 'Plano inválido.' });
+        const result = pixOrderStmts.create.run(nome.trim(), email?.trim() || null, plan);
+        res.json({ id: result.lastInsertRowid, message: 'Pedido criado! Aguarde aprovação do admin após o pagamento.' });
+    } catch (err) {
+        console.error('[PIX]', err.message);
+        res.status(500).json({ error: 'Erro ao criar pedido.' });
+    }
+});
+
+// Listar pedidos PIX (admin)
+app.get('/admin/pix-orders', requireOwner, (req, res) => {
+    const orders = pixOrderStmts.all.all();
+    res.json(orders);
+});
+
+// Aprovar pedido PIX (admin) — cria conta automaticamente
+app.post('/admin/pix-orders/:id/approve', requireOwner, async (req, res) => {
+    try {
+        const order = pixOrderStmts.byId.get(req.params.id);
+        if (!order) return res.status(404).json({ error: 'Pedido não encontrado.' });
+        if (order.status !== 'pendente') return res.status(400).json({ error: 'Pedido já processado.' });
+
+        // Gera username e senha
+        const baseName = order.nome.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
+        let username = baseName || 'user';
+        // Garante unicidade
+        if (userStmts.findByUsername.get(username)) {
+            username = baseName + Math.floor(Math.random() * 999);
+        }
+        const password = crypto.randomBytes(4).toString('hex'); // 8 chars
+        const hash = await bcrypt.hash(password, 10);
+
+        // Cria o usuário
+        userStmts.create.run(username, hash, null, order.plan, 'ativo', 0);
+
+        // Atualiza o pedido
+        pixOrderStmts.approve.run('aprovado', username, password, order.id);
+
+        res.json({ message: 'Pedido aprovado!', username, password, plan: order.plan });
+    } catch (err) {
+        console.error('[PIX APPROVE]', err.message);
+        res.status(500).json({ error: 'Erro ao aprovar pedido.' });
+    }
+});
+
+// Rejeitar pedido PIX (admin)
+app.post('/admin/pix-orders/:id/reject', requireOwner, (req, res) => {
+    const order = pixOrderStmts.byId.get(req.params.id);
+    if (!order) return res.status(404).json({ error: 'Pedido não encontrado.' });
+    if (order.status !== 'pendente') return res.status(400).json({ error: 'Pedido já processado.' });
+    pixOrderStmts.reject.run(order.id);
+    res.json({ message: 'Pedido rejeitado.' });
 });
 
 // Status

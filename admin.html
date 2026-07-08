@@ -1322,6 +1322,7 @@
             <button class="tab active" onclick="showTab('publish',this)">📤 Publicar</button>
             <button class="tab" onclick="showTab('manage',this)">📋 Gerenciar</button>
             <button class="tab" onclick="showTab('users',this)">👥 Usuários</button>
+            <button class="tab" onclick="showTab('pix',this)">💳 PIX</button>
         </div>
 
         <div class="msg" id="msg"></div>
@@ -1341,8 +1342,11 @@
                             </select></div>
                         <div class="field"><label>Categoria</label>
                             <input id="f_category" placeholder="Ex: Suspense, Ação, Terror">
-                            <span style="display:block; font-size:11px; color:rgba(167, 139, 250, 0.85); margin-top:5px; font-weight: 500; line-height: 1.4;">
-                                💡 <strong>Dica Notícias:</strong> Use <strong>Notícias</strong>, <strong>Documentário</strong> ou <strong>Vídeos</strong> para exibir como vídeo-notícia na aba <strong>Comunidade</strong> do site!
+                            <span
+                                style="display:block; font-size:11px; color:rgba(167, 139, 250, 0.85); margin-top:5px; font-weight: 500; line-height: 1.4;">
+                                💡 <strong>Dica Notícias:</strong> Use <strong>Notícias</strong>,
+                                <strong>Documentário</strong> ou <strong>Vídeos</strong> para exibir como vídeo-notícia
+                                na aba <strong>Comunidade</strong> do site!
                             </span>
                         </div>
                         <div class="field form-full"><label>Título</label><input id="f_title" required
@@ -1503,6 +1507,69 @@
                 </div>
             </div>
         </div>
+
+        <!-- PIX TAB -->
+        <div id="tab-pix" style="display:none">
+            <div class="form-card">
+                <div class="section-header">
+                    <div>
+                        <h2>💳 Pedidos PIX</h2>
+                        <p class="subtitle" style="margin-bottom:0">Gerencie os pedidos de assinatura via PIX</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadPixOrders()">🔄 Atualizar</button>
+                </div>
+                <br>
+                <div class="filter-row">
+                    <select id="filterPixStatus" onchange="filterPixOrders()">
+                        <option value="">Todos os status</option>
+                        <option value="pendente" selected>Pendentes</option>
+                        <option value="aprovado">Aprovados</option>
+                        <option value="rejeitado">Rejeitados</option>
+                    </select>
+                    <span style="color:rgba(255,255,255,.5);font-size:13px;font-weight:600" id="pixCount"></span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Plano</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pixList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CREDENTIALS MODAL -->
+            <div id="credentialsModal" class="modal-overlay">
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeCredentialsModal()">✕</button>
+                    <h2 class="modal-title">✅ Conta Criada com Sucesso!</h2>
+                    <p class="subtitle" style="margin-left:0;margin-bottom:24px">Envie estes dados para o cliente:</p>
+                    <div
+                        style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:14px;padding:22px;margin-bottom:20px">
+                        <div style="margin-bottom:14px"><span
+                                style="color:rgba(255,255,255,.5);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Username</span><br><strong
+                                style="font-size:20px;color:#4ade80" id="cred_username"></strong></div>
+                        <div style="margin-bottom:14px"><span
+                                style="color:rgba(255,255,255,.5);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Senha</span><br><strong
+                                style="font-size:20px;color:#4ade80;font-family:'JetBrains Mono',monospace"
+                                id="cred_password"></strong></div>
+                        <div><span
+                                style="color:rgba(255,255,255,.5);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Plano</span><br><strong
+                                style="font-size:16px;color:var(--primary-light)" id="cred_plan"></strong></div>
+                    </div>
+                    <button class="btn btn-primary" onclick="copyCredentials()" style="width:100%">📋 Copiar
+                        Dados</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL SUBSTITUIR VÍDEO -->
@@ -1559,6 +1626,7 @@
             btn.classList.add('active');
             if (name === 'manage') loadContents();
             if (name === 'users') loadUsers();
+            if (name === 'pix') loadPixOrders();
         }
 
         function updateForm() {
@@ -1861,6 +1929,106 @@
             xhr.open('PATCH', API + '/admin/content/' + id);
             xhr.setRequestHeader('Authorization', 'Bearer ' + TK());
             xhr.send(fd);
+        }
+
+        // ════════════════════════════════════════════════════════
+        // 💳 PIX ORDERS
+        // ════════════════════════════════════════════════════════
+        let allPixOrders = [];
+
+        async function loadPixOrders() {
+            document.getElementById('pixList').innerHTML = '<tr><td colspan="7"><div class="skeleton"></div></td></tr>';
+            try {
+                const data = await af('/admin/pix-orders');
+                allPixOrders = data || [];
+                filterPixOrders();
+            } catch (e) {
+                document.getElementById('pixList').innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Erro ao carregar pedidos</div></div></td></tr>';
+            }
+        }
+
+        function filterPixOrders() {
+            const status = document.getElementById('filterPixStatus').value;
+            let filtered = allPixOrders;
+            if (status) filtered = allPixOrders.filter(o => o.status === status);
+            renderPixOrders(filtered);
+        }
+
+        function renderPixOrders(list) {
+            const tbody = document.getElementById('pixList');
+            document.getElementById('pixCount').textContent = `${list.length} pedido(s)`;
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">Nenhum pedido encontrado</div></div></td></tr>';
+                return;
+            }
+            const statusBadge = (s) => {
+                if (s === 'pendente') return '<span class="badge" style="background:rgba(251,191,36,.18);color:#fbbf24;border:1px solid rgba(251,191,36,.35)">⏳ Pendente</span>';
+                if (s === 'aprovado') return '<span class="badge badge-active">✅ Aprovado</span>';
+                return '<span class="badge badge-blocked">❌ Rejeitado</span>';
+            };
+            tbody.innerHTML = list.map(o => `
+                <tr>
+                    <td><span class="id-badge">#${o.id}</span></td>
+                    <td><strong style="font-size:14px">${o.nome}</strong></td>
+                    <td><span style="color:rgba(255,255,255,.6);font-size:13px">${o.email || '—'}</span></td>
+                    <td><span class="badge badge-${o.plan}">${o.plan}</span></td>
+                    <td>${statusBadge(o.status)}</td>
+                    <td><span style="color:rgba(255,255,255,.5);font-size:13px">${o.created_at || '—'}</span></td>
+                    <td>
+                        ${o.status === 'pendente' ? `
+                            <div style="display:flex;gap:8px">
+                                <button class="btn btn-primary btn-sm" onclick="approveOrder(${o.id})">✅ Aprovar</button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectOrder(${o.id})">❌ Rejeitar</button>
+                            </div>
+                        ` : (o.status === 'aprovado' ? `<span style="color:rgba(255,255,255,.5);font-size:12px">👤 ${o.username}</span>` : '—')}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function approveOrder(id) {
+            if (!confirm('✅ Aprovar este pedido e criar a conta?')) return;
+            try {
+                const data = await af('/admin/pix-orders/' + id + '/approve', { method: 'POST' });
+                if (data.username) {
+                    showMsg('✅ Conta criada: ' + data.username, true);
+                    document.getElementById('cred_username').textContent = data.username;
+                    document.getElementById('cred_password').textContent = data.password;
+                    document.getElementById('cred_plan').textContent = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
+                    document.getElementById('credentialsModal').classList.add('show');
+                    loadPixOrders();
+                    loadStats();
+                } else {
+                    showMsg('❌ ' + (data.error || 'Erro ao aprovar'), false);
+                }
+            } catch (e) {
+                showMsg('❌ Erro de conexão', false);
+            }
+        }
+
+        async function rejectOrder(id) {
+            if (!confirm('❌ Rejeitar este pedido?')) return;
+            try {
+                await af('/admin/pix-orders/' + id + '/reject', { method: 'POST' });
+                showMsg('❌ Pedido rejeitado', true);
+                loadPixOrders();
+            } catch (e) {
+                showMsg('❌ Erro de conexão', false);
+            }
+        }
+
+        function closeCredentialsModal() {
+            document.getElementById('credentialsModal').classList.remove('show');
+        }
+
+        function copyCredentials() {
+            const u = document.getElementById('cred_username').textContent;
+            const p = document.getElementById('cred_password').textContent;
+            const plan = document.getElementById('cred_plan').textContent;
+            const text = `🎬 PMGFlix - Seus dados de acesso:\n\n👤 Username: ${u}\n🔒 Senha: ${p}\n💎 Plano: ${plan}\n\n🔗 Acesse: ${window.location.origin}`;
+            navigator.clipboard.writeText(text).then(() => {
+                showMsg('📋 Dados copiados! Cole e envie para o cliente.', true);
+            });
         }
     </script>
 </body>
