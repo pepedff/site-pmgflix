@@ -78,18 +78,6 @@ const CONFIG = {
 };
 
 // ============================================================
-// 🎨 ELEMENTOS VISUAIS
-// ============================================================
-
-const DIV = {
-    FULL: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    THIN: '┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄',
-    STAR: '・゜゜・✦・゜゜・',
-    DIAMOND: '◇◆◇◆◇◆◇◆◇◆◇◆◇',
-    WAVE: '⌒⌒⌒⌒⌒⌒⌒⌒⌒⌒⌒',
-};
-
-// ============================================================
 // 🚀 INICIALIZAÇÃO
 // ============================================================
 
@@ -134,42 +122,30 @@ function baseEmbed(cor = CONFIG.CORES.PRIMARIA) {
 
 function errorEmbed(titulo, descricao) {
     return baseEmbed(CONFIG.CORES.ERRO)
-        .setAuthor({ name: '✕   Algo deu errado' })
-        .setDescription(
-            `### ${titulo}\n` +
-            `${descricao}`,
-        );
+        .setTitle(`❌  ${titulo}`)
+        .setDescription(descricao);
 }
 
 function successEmbed(titulo, descricao) {
     return baseEmbed(CONFIG.CORES.SUCESSO)
-        .setAuthor({ name: '✓   Tudo certo!' })
-        .setDescription(
-            `### ${titulo}\n` +
-            `${descricao}`,
-        );
+        .setTitle(`✅  ${titulo}`)
+        .setDescription(descricao);
 }
 
 function infoEmbed(titulo, descricao) {
     return baseEmbed(CONFIG.CORES.INFO)
-        .setAuthor({ name: 'ⓘ   Informação' })
-        .setDescription(
-            `### ${titulo}\n` +
-            `${descricao}`,
-        );
+        .setTitle(`ℹ️  ${titulo}`)
+        .setDescription(descricao);
 }
 
-/** Renderiza o "card" visual de um plano */
-function renderPlanoCard(key, p) {
-    const beneficios = p.beneficios.map(b => `> ${b.icon}  ${b.text}`).join('\n');
-    return (
-        `### ${p.emoji}  Plano ${p.nome}\n` +
-        `> *${p.descricao}*\n` +
-        `> \n` +
-        `> 💰  **${p.valor}** /mês\n\n` +
-        `${beneficios}\n\n` +
-        `\`\`\`!pagar ${key}\`\`\``
-    );
+/** Campo de embed que representa um plano (usado em !planos e !pagar sem args) */
+function planoField(key, p) {
+    const beneficios = p.beneficios.map(b => `${b.icon}  ${b.text}`).join('\n');
+    return {
+        name: `${p.emoji}  ${p.nome} — ${p.valor}/mês`,
+        value: `*${p.descricao}*\n\n${beneficios}\n\n➜ \`!pagar ${key}\``,
+        inline: true,
+    };
 }
 
 // ============================================================
@@ -188,19 +164,14 @@ client.on('messageCreate', async (message) => {
         const planoKey = args[0]?.toLowerCase();
 
         if (!planoKey || !CONFIG.PLANOS[planoKey]) {
-            const cards = Object.entries(CONFIG.PLANOS)
-                .map(([k, p]) => renderPlanoCard(k, p))
-                .join(`\n${DIV.THIN}\n\n`);
-
             const embed = baseEmbed(CONFIG.CORES.PRIMARIA)
-                .setAuthor({ name: '🎬   PMGFlix' })
-                .setTitle('✦  Planos Disponíveis  ✦')
-                .setDescription(
-                    `> *Escolha o plano ideal e comece a assistir hoje mesmo.*\n\n` +
-                    `${cards}\n\n` +
-                    `${DIV.THIN}\n` +
-                    `💡  **Como assinar:** use \`!pagar <plano>\``,
-                );
+                .setAuthor({ name: 'PMGFlix', iconURL: client.user?.displayAvatarURL?.() })
+                .setTitle('🎬  Planos disponíveis')
+                .setDescription('Escolha o plano ideal e comece a assistir hoje mesmo.')
+                .addFields(
+                    ...Object.entries(CONFIG.PLANOS).map(([k, p]) => planoField(k, p)),
+                )
+                .setFooter({ text: 'Use !pagar <plano> para assinar' });
             return message.reply({ embeds: [embed] });
         }
 
@@ -210,16 +181,13 @@ client.on('messageCreate', async (message) => {
         const existente = db.findByDiscordId(message.author.id);
         if (existente && existente.status === 'ativo') {
             const embed = baseEmbed(CONFIG.CORES.AVISO)
-                .setAuthor({ name: '⚠️   Atenção' })
-                .setTitle('Você já é assinante!')
-                .setDescription(
-                    `> *Sua conta já possui um plano ativo.*\n\n` +
-                    `### ${existente.plano.includes('Ultra') ? '💎' : '⭐'}  ${existente.plano}\n` +
-                    `**Login:** \`${existente.username}\`\n` +
-                    `**Status:** 🟢 Ativo\n\n` +
-                    `${DIV.THIN}\n\n` +
-                    `🔑  **Esqueceu a senha?**  →  \`!resetar\`\n` +
-                    `ℹ️  **Ver sua conta**  →  \`!minhaconta\``,
+                .setTitle('⚠️  Você já é assinante')
+                .setDescription('Sua conta já possui um plano ativo.')
+                .addFields(
+                    { name: 'Plano', value: `${existente.plano.includes('Ultra') ? '💎' : '⭐'}  ${existente.plano}`, inline: true },
+                    { name: 'Login', value: `\`${existente.username}\``, inline: true },
+                    { name: 'Status', value: '🟢  Ativo', inline: true },
+                    { name: 'Precisa de ajuda?', value: '🔑  `!resetar` para gerar nova senha\nℹ️  `!minhaconta` para ver os detalhes' },
                 );
             return message.reply({ embeds: [embed] });
         }
@@ -230,29 +198,23 @@ client.on('messageCreate', async (message) => {
 
         const pagEmbed = baseEmbed(plano.cor)
             .setAuthor({
-                name: `${plano.tag}  •  Checkout`,
+                name: `Checkout ${plano.tag}`,
                 iconURL: message.author.displayAvatarURL({ dynamic: true }),
             })
-            .setTitle(`⚡  Pagamento via Pix`)
+            .setTitle(`${plano.emoji}  Pagamento via Pix`)
             .setDescription(
-                `Olá **${message.author.displayName}**! 👋\n` +
-                `*Siga as instruções abaixo para ativar seu plano.*\n\n` +
-                `### ${plano.emoji}  Resumo do pedido\n` +
-                `> **Plano:**  ${plano.nome}\n` +
-                `> **Valor:**  **${plano.valor}** /mês\n` +
-                `> **Método:**  Pix ⚡`,
+                `Olá **${message.author.displayName}**! Siga os passos abaixo para ativar seu plano.`,
             )
             .addFields(
+                { name: 'Plano', value: plano.nome, inline: true },
+                { name: 'Valor', value: `${plano.valor}/mês`, inline: true },
+                { name: 'Método', value: 'Pix ⚡', inline: true },
                 {
                     name: '✨  O que está incluso',
                     value: beneficiosTexto,
                 },
                 {
-                    name: `\u200B`,
-                    value: `${DIV.DIAMOND}`,
-                },
-                {
-                    name: '⚡  Dados para pagamento',
+                    name: '💳  Dados para pagamento',
                     value:
                         `\`\`\`yaml\n` +
                         `Chave   : ${CONFIG.PIX.CHAVE}\n` +
@@ -264,10 +226,10 @@ client.on('messageCreate', async (message) => {
                 {
                     name: '📋  Como funciona',
                     value:
-                        `**1ª**  ▸  Faça o Pix no valor exato\n` +
-                        `**2ª**  ▸  Envie o **comprovante** neste canal\n` +
-                        `**3ª**  ▸  Aguarde a aprovação do admin\n` +
-                        `**4ª**  ▸  Receba seu login por **DM** 🎉`,
+                        `**1.** Faça o Pix no valor exato\n` +
+                        `**2.** Envie o **comprovante** neste canal\n` +
+                        `**3.** Aguarde a aprovação do admin\n` +
+                        `**4.** Receba seu login por **DM** 🎉`,
                 },
             )
             .setThumbnail(message.author.displayAvatarURL({ dynamic: true, size: 256 }));
@@ -297,19 +259,14 @@ client.on('messageCreate', async (message) => {
 
     // ── !planos ─────────────────────────────────────────
     if (cmd === 'planos') {
-        const cards = Object.entries(CONFIG.PLANOS)
-            .map(([k, p]) => renderPlanoCard(k, p))
-            .join(`\n${DIV.THIN}\n\n`);
-
         const embed = baseEmbed(CONFIG.CORES.PRIMARIA)
-            .setAuthor({ name: '🎬   PMGFlix' })
-            .setTitle('✦  Nossos Planos  ✦')
-            .setDescription(
-                `> *O melhor do streaming a partir de R$ 14,90/mês*\n\n` +
-                `${cards}\n\n` +
-                `${DIV.THIN}\n` +
-                `💡  Use \`!pagar <plano>\` para começar`,
-            );
+            .setAuthor({ name: 'PMGFlix', iconURL: client.user?.displayAvatarURL?.() })
+            .setTitle('🎬  Nossos planos')
+            .setDescription('O melhor do streaming a partir de R$ 14,90/mês.')
+            .addFields(
+                ...Object.entries(CONFIG.PLANOS).map(([k, p]) => planoField(k, p)),
+            )
+            .setFooter({ text: 'Use !pagar <plano> para começar' });
 
         const botoes = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -326,18 +283,14 @@ client.on('messageCreate', async (message) => {
     if (cmd === 'minhaconta') {
         const user = db.findByDiscordId(message.author.id);
         if (!user || user.status !== 'ativo') {
-            const embed = baseEmbed(CONFIG.CORES.ERRO)
-                .setAuthor({ name: '✕   Conta inativa' })
-                .setTitle('Você ainda não é assinante')
-                .setDescription(
-                    `> *Comece sua jornada no PMGFlix agora!*\n\n` +
-                    `### ⭐  Plano Premium\n` +
-                    `> **R$ 14,90** /mês  ▸  \`!pagar premium\`\n\n` +
-                    `### 💎  Plano Ultra\n` +
-                    `> **R$ 24,90** /mês  ▸  \`!pagar ultra\`\n\n` +
-                    `${DIV.THIN}\n` +
-                    `📋  Ver detalhes  →  \`!planos\``,
-                );
+            const embed = baseEmbed(CONFIG.CORES.INFO)
+                .setTitle('🎬  Você ainda não é assinante')
+                .setDescription('Comece sua jornada no PMGFlix agora mesmo:')
+                .addFields(
+                    { name: '⭐  Premium', value: '**R$ 14,90/mês**\n➜ `!pagar premium`', inline: true },
+                    { name: '💎  Ultra', value: '**R$ 24,90/mês**\n➜ `!pagar ultra`', inline: true },
+                )
+                .setFooter({ text: 'Use !planos para ver todos os detalhes' });
             return message.reply({ embeds: [embed] });
         }
 
@@ -349,15 +302,11 @@ client.on('messageCreate', async (message) => {
 
         const embed = baseEmbed(planoCor)
             .setAuthor({
-                name: `${message.author.displayName}  •  Minha Conta`,
+                name: `${message.author.displayName} • Minha Conta`,
                 iconURL: message.author.displayAvatarURL({ dynamic: true }),
             })
-            .setTitle(`${planoEmoji}  Detalhes da Assinatura`)
-            .setDescription(
-                `> *Tudo sobre sua conta PMGFlix em um só lugar.*\n\n` +
-                `### 🟢  Status: Ativo\n` +
-                `Sua assinatura está em dia ✨`,
-            )
+            .setTitle(`${planoEmoji}  Detalhes da assinatura`)
+            .setDescription('🟢  Sua assinatura está ativa e em dia.')
             .addFields(
                 {
                     name: '👤  Username',
@@ -376,25 +325,14 @@ client.on('messageCreate', async (message) => {
                 },
                 {
                     name: '📅  Membro desde',
-                    value: `<t:${Math.floor(dataCriacao.getTime() / 1000)}:D>`,
-                    inline: true,
+                    value: `<t:${Math.floor(dataCriacao.getTime() / 1000)}:D> (<t:${Math.floor(dataCriacao.getTime() / 1000)}:R>)`,
+                    inline: false,
                 },
                 {
-                    name: '🕒  Há',
-                    value: `<t:${Math.floor(dataCriacao.getTime() / 1000)}:R>`,
-                    inline: true,
-                },
-                {
-                    name: '\u200B',
-                    value: '\u200B',
-                    inline: true,
-                },
-                {
-                    name: `${DIV.DIAMOND}`,
+                    name: '🛠️  Ações disponíveis',
                     value:
-                        `### 🛠️  Ações disponíveis\n` +
-                        `🔑  \`!resetar\`  ▸  Gerar nova senha\n` +
-                        `🗑️  \`!deletarconta\`  ▸  Excluir conta`,
+                        `🔑  \`!resetar\` — gerar nova senha\n` +
+                        `🗑️  \`!deletarconta\` — excluir conta`,
                 },
             )
             .setThumbnail(message.author.displayAvatarURL({ dynamic: true, size: 256 }));
@@ -437,11 +375,8 @@ client.on('messageCreate', async (message) => {
 
         try {
             const dmEmbed = baseEmbed(CONFIG.CORES.AVISO)
-                .setAuthor({ name: '🔑   Senha Atualizada' })
-                .setTitle('✦  Suas novas credenciais  ✦')
-                .setDescription(
-                    `> *Use os dados abaixo para acessar o site.*`,
-                )
+                .setTitle('🔑  Suas novas credenciais')
+                .setDescription('Use os dados abaixo para acessar o site.')
                 .addFields(
                     {
                         name: '👤  Username',
@@ -449,16 +384,13 @@ client.on('messageCreate', async (message) => {
                         inline: false,
                     },
                     {
-                        name: '🔑  Nova Senha',
+                        name: '🔑  Nova senha',
                         value: `\`\`\`fix\n${novaSenha}\n\`\`\``,
                         inline: false,
                     },
                     {
-                        name: `${DIV.DIAMOND}`,
-                        value:
-                            `### ⚠️  Importante\n` +
-                            `Guarde esta senha em local seguro.\n` +
-                            `Ela **não será exibida novamente**.`,
+                        name: '⚠️  Importante',
+                        value: 'Guarde esta senha em local seguro. Ela **não será exibida novamente**.',
                     },
                 );
 
@@ -512,33 +444,27 @@ client.on('messageCreate', async (message) => {
             const isUltra = u.plano?.includes('Ultra');
             const emoji = isUltra ? '💎' : '⭐';
             const num = String(i + 1).padStart(2, '0');
-            return `\`${num}\`  ${emoji}  **${u.username}**  ▸  <@${u.discordId}>`;
+            return `\`${num}\`  ${emoji}  **${u.username}** — <@${u.discordId}>`;
         }).join('\n');
 
         const embed = baseEmbed(CONFIG.CORES.PRIMARIA)
-            .setAuthor({ name: '👑   Painel Administrativo' })
-            .setTitle(`✦  Usuários Ativos  ✦`)
+            .setAuthor({ name: 'Painel Administrativo', iconURL: client.user?.displayAvatarURL?.() })
+            .setTitle('👑  Usuários ativos')
             .setDescription(
-                `> *Visão geral dos assinantes do PMGFlix.*\n\n` +
-                `### 📊  Estatísticas\n` +
-                `⭐  **Premium:**  \`${premium}\` assinante(s)\n` +
-                `💎  **Ultra:**  \`${ultra}\` assinante(s)\n` +
-                `👥  **Total:**  \`${total}\` assinante(s)\n` +
-                `💰  **Receita estimada:**  \`R$ ${receita}\` /mês`,
+                `⭐  Premium: **${premium}** 💎  Ultra: **${ultra}** 👥  Total: **${total}**\n` +
+                `💰  Receita estimada: **R$ ${receita}/mês**`,
             )
             .addFields(
                 {
-                    name: `${DIV.DIAMOND}`,
-                    value:
-                        `### 📋  Lista de assinantes\n${lista}` +
+                    name: '📋  Lista de assinantes',
+                    value: lista +
                         (ativos.length > 15 ? `\n\n*+ ${ativos.length - 15} usuário(s) não exibidos*` : ''),
                 },
                 {
-                    name: `${DIV.THIN}`,
+                    name: '🛠️  Ações administrativas',
                     value:
-                        `### 🛠️  Ações administrativas\n` +
-                        `\`!revogar <user>\`  ▸  Suspender acesso\n` +
-                        `\`!deletar <user>\`  ▸  Excluir conta`,
+                        `\`!revogar <user>\` — suspender acesso\n` +
+                        `\`!deletar <user>\` — excluir conta`,
                 },
             );
         return message.reply({ embeds: [embed] });
@@ -658,42 +584,39 @@ client.on('messageCreate', async (message) => {
         const isOwner = message.author.id === CONFIG.OWNER_ID;
 
         const embed = baseEmbed(CONFIG.CORES.PRIMARIA)
-            .setAuthor({ name: '🤖   PMGFlix Bot' })
-            .setTitle('✦  Central de Comandos  ✦')
-            .setDescription(
-                `> *Todos os comandos disponíveis para você.*\n\n` +
-                `Digite qualquer comando começando com \`!\` para usar.`,
-            )
+            .setAuthor({ name: 'PMGFlix Bot', iconURL: client.user?.displayAvatarURL?.() })
+            .setTitle('🤖  Central de comandos')
+            .setDescription('Digite qualquer comando começando com `!`.')
             .addFields(
                 {
-                    name: '🎬   Assinatura',
+                    name: '🎬  Assinatura',
                     value:
-                        `\`!planos\`  ▸  Ver todos os planos\n` +
-                        `\`!pagar <plano>\`  ▸  Iniciar pagamento`,
+                        `\`!planos\` — ver todos os planos\n` +
+                        `\`!pagar <plano>\` — iniciar pagamento`,
                     inline: false,
                 },
                 {
-                    name: '👤   Sua Conta',
+                    name: '👤  Sua conta',
                     value:
-                        `\`!minhaconta\`  ▸  Ver dados da conta\n` +
-                        `\`!resetar\`  ▸  Gerar nova senha\n` +
-                        `\`!deletarconta\`  ▸  Excluir conta`,
+                        `\`!minhaconta\` — ver dados da conta\n` +
+                        `\`!resetar\` — gerar nova senha\n` +
+                        `\`!deletarconta\` — excluir conta`,
                     inline: false,
                 },
                 {
-                    name: 'ⓘ   Geral',
-                    value: `\`!ajuda\`  ▸  Mostrar esta mensagem`,
+                    name: 'ℹ️  Geral',
+                    value: `\`!ajuda\` — mostrar esta mensagem`,
                     inline: false,
                 },
             );
 
         if (isOwner) {
             embed.addFields({
-                name: `${DIV.DIAMOND}\n👑   Painel do Administrador`,
+                name: '👑  Painel do administrador',
                 value:
-                    `\`!usuarios\`  ▸  Listar assinantes ativos\n` +
-                    `\`!revogar <user>\`  ▸  Suspender acesso\n` +
-                    `\`!deletar <user>\`  ▸  Excluir usuário`,
+                    `\`!usuarios\` — listar assinantes ativos\n` +
+                    `\`!revogar <user>\` — suspender acesso\n` +
+                    `\`!deletar <user>\` — excluir usuário`,
             });
         }
 
@@ -788,15 +711,14 @@ client.on('interactionCreate', async (interaction) => {
         // Embed pública (canal)
         const aprovEmbed = baseEmbed(CONFIG.CORES.SUCESSO)
             .setAuthor({
-                name: '✓   Pagamento Aprovado',
+                name: 'Pagamento Aprovado',
                 iconURL: membro?.displayAvatarURL?.({ dynamic: true }),
             })
             .setTitle(`🎉  Bem-vindo ao PMGFlix, ${nome}!`)
             .setDescription(
-                `> *As credenciais foram enviadas por DM.*\n\n` +
                 `✅  Pagamento confirmado\n` +
                 `✅  Conta criada com sucesso\n` +
-                `✅  Credenciais enviadas`,
+                `✅  Credenciais enviadas por DM`,
             )
             .addFields(
                 { name: `${plano.emoji}  Plano`, value: `\`${plano.nome}\``, inline: true },
@@ -814,13 +736,9 @@ client.on('interactionCreate', async (interaction) => {
                     .join('\n');
 
                 const dmEmbed = baseEmbed(plano.cor)
-                    .setAuthor({ name: `${plano.tag}   •   Ativado` })
-                    .setTitle(`🎉  Bem-vindo ao PMGFlix!`)
-                    .setDescription(
-                        `> *Sua assinatura foi ativada com sucesso!*\n\n` +
-                        `### 🔐  Suas credenciais de acesso\n` +
-                        `Use os dados abaixo para fazer login no site.`,
-                    )
+                    .setAuthor({ name: `${plano.tag} • Ativado` })
+                    .setTitle('🎉  Bem-vindo ao PMGFlix!')
+                    .setDescription('Sua assinatura foi ativada com sucesso! Use as credenciais abaixo para fazer login no site.')
                     .addFields(
                         {
                             name: '👤  Username',
@@ -833,19 +751,15 @@ client.on('interactionCreate', async (interaction) => {
                             inline: false,
                         },
                         {
-                            name: `${DIV.DIAMOND}`,
+                            name: `${plano.emoji}  Seu plano ${plano.nome}`,
                             value:
-                                `### ${plano.emoji}  Seu Plano ${plano.nome}\n` +
-                                `> **Valor:** ${plano.valor}/mês\n` +
-                                `> *${plano.descricao}*\n\n` +
-                                `**Benefícios inclusos:**\n${beneficiosTexto}`,
+                                `**Valor:** ${plano.valor}/mês\n` +
+                                `*${plano.descricao}*\n\n` +
+                                `${beneficiosTexto}`,
                         },
                         {
-                            name: `${DIV.THIN}`,
-                            value:
-                                `### ⚠️  Importante\n` +
-                                `Guarde suas credenciais em local seguro!\n` +
-                                `Caso perca a senha, use \`!resetar\` no servidor.`,
+                            name: '⚠️  Importante',
+                            value: 'Guarde suas credenciais em local seguro! Caso perca a senha, use `!resetar` no servidor.',
                         },
                     )
                     .setThumbnail(client.user.displayAvatarURL());
@@ -869,8 +783,8 @@ client.on('interactionCreate', async (interaction) => {
             try {
                 const canal = await interaction.guild.channels.fetch(CONFIG.CANAL_LOGS_ID);
                 const logEmbed = baseEmbed(CONFIG.CORES.SUCESSO)
-                    .setAuthor({ name: '📝   Log  •  Pagamento Aprovado' })
-                    .setTitle(`✦  Nova assinatura ativada  ✦`)
+                    .setAuthor({ name: 'Log • Pagamento Aprovado' })
+                    .setTitle('📝  Nova assinatura ativada')
                     .addFields(
                         { name: '👤  Cliente', value: `${nome}\n<@${userId}>`, inline: true },
                         { name: '🔐  Login', value: `\`${username}\``, inline: true },
@@ -891,20 +805,17 @@ client.on('interactionCreate', async (interaction) => {
     if (acao === 'recusar') {
         const recEmbed = baseEmbed(CONFIG.CORES.ERRO)
             .setAuthor({
-                name: '✕   Pagamento Recusado',
+                name: 'Pagamento Recusado',
                 iconURL: membro?.displayAvatarURL?.({ dynamic: true }),
             })
-            .setTitle('Solicitação recusada')
-            .setDescription(
-                `> *O pagamento não foi confirmado.*\n\n` +
-                `❌  Pagamento não identificado`,
-            )
+            .setTitle('❌  Solicitação recusada')
+            .setDescription('O pagamento não foi confirmado.')
             .addFields(
                 { name: '👤  Cliente', value: `<@${userId}>`, inline: true },
                 { name: `${plano.emoji}  Plano`, value: plano.nome, inline: true },
                 { name: '✍️  Recusado por', value: interaction.user.displayName, inline: true },
                 {
-                    name: `${DIV.THIN}`,
+                    name: '​',
                     value: `<@${userId}>, se você acredita que houve um erro, entre em contato com a administração.`,
                 },
             );
@@ -914,20 +825,14 @@ client.on('interactionCreate', async (interaction) => {
         if (membro) {
             try {
                 const dmRec = baseEmbed(CONFIG.CORES.ERRO)
-                    .setAuthor({ name: '✕   Pagamento Recusado' })
-                    .setTitle('Sua solicitação foi recusada')
-                    .setDescription(
-                        `> *Infelizmente seu pagamento não foi aprovado.*\n\n` +
-                        `### ${plano.emoji}  Plano solicitado\n` +
-                        `**${plano.nome}**  •  ${plano.valor}/mês`,
-                    )
+                    .setTitle('❌  Sua solicitação foi recusada')
+                    .setDescription(`Infelizmente seu pagamento não foi aprovado.\n\n**Plano solicitado:** ${plano.emoji} ${plano.nome} — ${plano.valor}/mês`)
                     .addFields({
-                        name: `${DIV.THIN}`,
+                        name: '🤔  Possíveis motivos',
                         value:
-                            `### 🤔  Possíveis motivos\n` +
-                            `▸  Comprovante não enviado ou inválido\n` +
-                            `▸  Valor incorreto\n` +
-                            `▸  Pix não identificado em conta\n\n` +
+                            `• Comprovante não enviado ou inválido\n` +
+                            `• Valor incorreto\n` +
+                            `• Pix não identificado em conta\n\n` +
                             `**Entre em contato com a administração** para mais informações.`,
                     });
                 await membro.send({ embeds: [dmRec] });

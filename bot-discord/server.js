@@ -282,4 +282,24 @@ app.listen(PORT, () => {
     console.log(`📋 Rotas: /login, /contents, /watch, /admin/*`);
 });
 
+// ════════════════════════════════════════════════════════
+// ♻️  KEEP-ALIVE — impede o Render (free) de hibernar
+// ════════════════════════════════════════════════════════
+// O plano gratuito do Render suspende o serviço após ~15 min
+// sem requisições de entrada, o que também desconecta o bot.
+// Este auto-ping mantém a instância acordada.
+const SELF_URL = process.env.RENDER_EXTERNAL_URL || process.env.SELF_URL;
+if (SELF_URL) {
+    const PING_INTERVAL = 10 * 60 * 1000; // 10 minutos
+    setInterval(async () => {
+        try {
+            const res = await fetch(`${SELF_URL.replace(/\/$/, '')}/api/status`);
+            console.log(`[KEEP-ALIVE] ping ${res.status} @ ${new Date().toISOString()}`);
+        } catch (err) {
+            console.error('[KEEP-ALIVE] falhou:', err.message);
+        }
+    }, PING_INTERVAL);
+    console.log(`♻️  Keep-alive ativo (${SELF_URL})`);
+}
+
 module.exports = app;
