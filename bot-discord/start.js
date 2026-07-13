@@ -8,8 +8,5 @@ console.log('');
 console.log('🎬 PMGFlix — Iniciando sistema...');
 console.log('');
 
-// Inicia o bot Discord
-require('./index');
-
 // Inicia a API Express
 require('./server');

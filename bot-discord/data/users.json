@@ -21,6 +21,17 @@
       "status": "ativo",
       "createdAt": "2026-05-27T17:52:06.037Z",
       "approvedBy": "nanane2s"
+    },
+    {
+      "username": "giu0406",
+      "passwordHash": "$2b$10$C4.RlKfgkThXoWOlucDqbeLJoJ8GIsqfKO9nLzv.shhJ4XHEkVs9e",
+      "discordId": "1524537649803694100",
+      "discordTag": "giu_0406",
+      "plano": "Ultra",
+      "planoKey": "ultra",
+      "status": "ativo",
+      "createdAt": "2026-07-08T22:17:46.885Z",
+      "approvedBy": "nanane2s"
     }
   ]
 }

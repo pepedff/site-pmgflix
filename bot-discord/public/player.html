@@ -1779,7 +1779,7 @@
         <div class="player-section">
             <div class="player-wrap" id="playerWrap">
                 <div class="ambient-light"></div>
-                <video id="video" preload="auto"></video>
+                <video id="video" preload="auto" playsinline webkit-playsinline></video>
 
                 <div class="player-top">
                     <div class="player-top-title" id="topTitle"></div>
@@ -1863,7 +1863,7 @@
     </div>
 
     <script>
-        const API = window.location.origin;
+        const API = (localStorage.getItem('pmgflix_api_url') || window.location.origin).replace(/\/$/, '');
         const TOKEN = () => localStorage.getItem('pmgflix_token');
         function apiFetch(url, opts = {}) {
             return fetch(API + url, {
@@ -1890,6 +1890,16 @@
         const volFill = document.getElementById('volFill');
         const volBar = document.getElementById('volBar');
         const playerWrap = document.getElementById('playerWrap');
+
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+            video.controls = true;
+            // Oculta controles customizados
+            const customCtrls = document.getElementById('controls');
+            if (customCtrls) customCtrls.style.display = 'none';
+            const centerPlayBtn = document.getElementById('centerPlay');
+            if (centerPlayBtn) centerPlayBtn.style.display = 'none';
+        }
 
         async function init() {
             if (!contentId) { showError('Conteúdo não encontrado', '📭'); return; }
@@ -2136,13 +2146,20 @@
             }
         });
 
-        video.addEventListener('play', () => { playBtn.textContent = '⏸'; centerPlay.classList.remove('show'); });
+        video.addEventListener('play', () => {
+            if (isMobile) return;
+            playBtn.textContent = '⏸';
+            centerPlay.classList.remove('show');
+        });
         video.addEventListener('pause', () => {
+            if (isMobile) return;
             playBtn.textContent = '▶';
             centerPlay.textContent = '▶';
             if (!video.ended) centerPlay.classList.add('show');
         });
-        video.addEventListener('click', togglePlay);
+        video.addEventListener('click', () => {
+            if (!isMobile) togglePlay();
+        });
 
         video.addEventListener('volumechange', () => {
             volFill.style.width = (video.muted ? 0 : video.volume * 100) + '%';
@@ -2150,6 +2167,7 @@
         });
 
         video.addEventListener('dblclick', (e) => {
+            if (isMobile) return;
             const rect = video.getBoundingClientRect();
             const x = e.clientX - rect.left;
             if (x < rect.width * 0.3) skip(-10);
@@ -2281,6 +2299,7 @@
 
         let hideTimer;
         function showControls() {
+            if (isMobile) return;
             document.getElementById('controls').classList.add('show');
             playerWrap.classList.add('show-controls');
             playerWrap.style.cursor = 'default';

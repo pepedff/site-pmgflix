@@ -1600,7 +1600,7 @@
     </div>
 
     <script>
-        const API = localStorage.getItem('pmgflix_api_url') || window.location.origin;
+        const API = (localStorage.getItem('pmgflix_api_url') || window.location.origin).replace(/\/$/, '');
         const TK = () => localStorage.getItem('pmgflix_token');
         let allContents = [], allUsers = [];
 

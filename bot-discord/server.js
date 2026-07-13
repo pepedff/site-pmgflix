@@ -12,17 +12,33 @@ const { userStmts, contentStmts, seasonStmts, episodeStmts, watchStmts, pixOrder
 const { generateToken, requireAuth, requireOwner, canAccess } = require('./auth');
 const crypto = require('crypto');
 
+const resolveOwner = (user) => {
+    return user.is_owner === 1 || (process.env.OWNER_ID && String(user.discord_id) === String(process.env.OWNER_ID));
+};
+
 const app = express();
 const PORT = process.env.API_PORT || 3001;
 
 // ── Uploads ─────────────────────────────────────────────
+const os = require('os');
 const PERSISTENT_DIR = '/var/data';
-const UPLOADS = fs.existsSync(PERSISTENT_DIR) ? path.join(PERSISTENT_DIR, 'uploads') : path.join(__dirname, 'uploads');
-if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
-['videos', 'posters', 'subtitles'].forEach(d => {
-    const p = path.join(UPLOADS, d);
-    if (!fs.existsSync(p)) fs.mkdirSync(p);
-});
+let UPLOADS = fs.existsSync(PERSISTENT_DIR) ? path.join(PERSISTENT_DIR, 'uploads') : path.join(__dirname, 'uploads');
+
+try {
+    if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
+    ['videos', 'posters', 'subtitles'].forEach(d => {
+        const p = path.join(UPLOADS, d);
+        if (!fs.existsSync(p)) fs.mkdirSync(p);
+    });
+} catch (err) {
+    console.warn(`[WARNING] Failed to write/create uploads directory at ${UPLOADS}. Falling back to OS temp directory. Error: ${err.message}`);
+    UPLOADS = path.join(os.tmpdir(), 'pmgflix-uploads');
+    if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
+    ['videos', 'posters', 'subtitles'].forEach(d => {
+        const p = path.join(UPLOADS, d);
+        if (!fs.existsSync(p)) fs.mkdirSync(p);
+    });
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -47,6 +63,28 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, '..')));
 app.use('/uploads', express.static(UPLOADS));
 
+// Explicit handlers for root pages to bypass path/routing bugs in hosting environments
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../index.html')));
+app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, '../index.html')));
+app.get('/assinar.html', (req, res) => res.sendFile(path.join(__dirname, '../assinar.html')));
+app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, '../admin.html')));
+app.get('/player.html', (req, res) => res.sendFile(path.join(__dirname, '../player.html')));
+
+app.get('/debug-paths', (req, res) => {
+    try {
+        const parentPath = path.join(__dirname, '..');
+        res.json({
+            __dirname,
+            parentPath,
+            parentExists: fs.existsSync(parentPath),
+            parentFiles: fs.existsSync(parentPath) ? fs.readdirSync(parentPath) : null,
+            cwd: process.cwd()
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Set owner flag
 if (process.env.OWNER_ID) setOwnerByDiscordId(process.env.OWNER_ID);
 
@@ -66,12 +104,13 @@ app.post('/login', async (req, res) => {
         if (!ok) return res.status(401).json({ success: false, message: 'Senha incorreta.' });
         if (user.status !== 'ativo') return res.status(403).json({ success: false, message: 'Conta inativa.' });
 
-        const token = generateToken(user);
+        const isOwner = resolveOwner(user);
+        const token = generateToken({ ...user, is_owner: isOwner });
         return res.json({
             success: true,
             message: 'Login realizado!',
             token,
-            user: { id: user.id, username: user.username, plan: user.plan, is_owner: user.is_owner, films_watched: user.films_watched },
+            user: { id: user.id, username: user.username, plan: user.plan, is_owner: isOwner, films_watched: user.films_watched },
         });
     } catch (err) {
         console.error('[LOGIN]', err.message);
@@ -81,7 +120,8 @@ app.post('/login', async (req, res) => {
 
 app.get('/me', requireAuth, (req, res) => {
     const u = req.user;
-    res.json({ id: u.id, username: u.username, plan: u.plan, is_owner: u.is_owner, films_watched: u.films_watched });
+    const isOwner = resolveOwner(u);
+    res.json({ id: u.id, username: u.username, plan: u.plan, is_owner: isOwner, films_watched: u.films_watched });
 });
 
 // ════════════════════════════════════════════════════════
@@ -275,7 +315,7 @@ app.get('/admin/users', requireOwner, (req, res) => {
 // ════════════════════════════════════════════════════════
 
 // Criar pedido PIX (público)
-app.post('/pix/order', (req, res) => {
+app.post(['/pix/order', '/order/create'], (req, res) => {
     try {
         const { nome, email, plan } = req.body;
         if (!nome || !plan) return res.status(400).json({ error: 'Nome e plano são obrigatórios.' });
@@ -289,13 +329,13 @@ app.post('/pix/order', (req, res) => {
 });
 
 // Listar pedidos PIX (admin)
-app.get('/admin/pix-orders', requireOwner, (req, res) => {
+app.get(['/admin/pix-orders', '/admin/orders-list'], requireOwner, (req, res) => {
     const orders = pixOrderStmts.all.all();
     res.json(orders);
 });
 
 // Aprovar pedido PIX (admin) — cria conta automaticamente
-app.post('/admin/pix-orders/:id/approve', requireOwner, async (req, res) => {
+app.post(['/admin/pix-orders/:id/approve', '/admin/orders-list/:id/approve'], requireOwner, async (req, res) => {
     try {
         const order = pixOrderStmts.byId.get(req.params.id);
         if (!order) return res.status(404).json({ error: 'Pedido não encontrado.' });
@@ -325,7 +365,7 @@ app.post('/admin/pix-orders/:id/approve', requireOwner, async (req, res) => {
 });
 
 // Rejeitar pedido PIX (admin)
-app.post('/admin/pix-orders/:id/reject', requireOwner, (req, res) => {
+app.post(['/admin/pix-orders/:id/reject', '/admin/orders-list/:id/reject'], requireOwner, (req, res) => {
     const order = pixOrderStmts.byId.get(req.params.id);
     if (!order) return res.status(404).json({ error: 'Pedido não encontrado.' });
     if (order.status !== 'pendente') return res.status(400).json({ error: 'Pedido já processado.' });
